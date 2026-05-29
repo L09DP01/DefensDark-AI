@@ -1,7 +1,7 @@
 {
-  "short_name": "HackerAI",
-  "name": "HackerAI",
-  "description": "HackerAI - AI-Powered Penetration Testing Assistant",
+  "short_name": "DefensDark AI",
+  "name": "DefensDark AI",
+  "description": "DefensDark AI - AI-Powered Cyber Defense Platform",
   "icons": [
     {
       "src": "/icon-192x192.png",

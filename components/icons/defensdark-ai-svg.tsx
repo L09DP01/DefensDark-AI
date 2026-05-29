@@ -1,11 +1,14 @@
 import type { FC } from "react";
 
-interface HackerAISVGProps {
+interface DefensDarkAISVGProps {
   theme: "dark" | "light";
   scale?: number;
 }
 
-export const HackerAISVG: FC<HackerAISVGProps> = ({ theme, scale = 1 }) => {
+export const DefensDarkAISVG: FC<DefensDarkAISVGProps> = ({
+  theme,
+  scale = 1,
+}) => {
   const fillColor = theme === "dark" ? "#fff" : "#000";
 
   return (

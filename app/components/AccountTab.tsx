@@ -87,14 +87,14 @@ const AccountTab = () => {
           <div>
             <div className="font-medium">
               {subscription === "ultra"
-                ? "HackerAI Ultra"
+                ? "DefensDark AI Ultra"
                 : subscription === "team"
-                  ? "HackerAI Team"
+                  ? "DefensDark AI Team"
                   : subscription === "pro-plus"
-                    ? "HackerAI Pro+"
+                    ? "DefensDark AI Pro+"
                     : subscription === "pro"
-                      ? "HackerAI Pro"
-                      : "Get HackerAI Pro"}
+                      ? "DefensDark AI Pro"
+                      : "Get DefensDark AI Pro"}
             </div>
           </div>
           {subscription !== "free" ? (

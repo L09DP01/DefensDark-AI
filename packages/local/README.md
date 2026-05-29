@@ -1,40 +1,40 @@
-# @hackerai/local
+# @defensdark-ai/local
 
-HackerAI Local Sandbox Client - Execute commands on your local machine from HackerAI.
+DefensDark AI Local Sandbox Client - Execute commands on your local machine from DefensDark AI.
 
 ## Installation
 
 ```bash
-npx @hackerai/local@latest --token YOUR_TOKEN
+npx @defensdark-ai/local@latest --token YOUR_TOKEN
 ```
 
 Or install globally:
 
 ```bash
-npm install -g @hackerai/local
-hackerai-local --token YOUR_TOKEN
+npm install -g @defensdark-ai/local
+defensdark-ai-local --token YOUR_TOKEN
 ```
 
 ## Usage
 
 ```bash
-npx @hackerai/local@latest --token hsb_abc123
+npx @defensdark-ai/local@latest --token hsb_abc123
 ```
 
-Commands run directly on your host OS. The client connects to HackerAI and relays commands in real-time.
+Commands run directly on your host OS. The client connects to DefensDark AI and relays commands in real-time.
 
 ## Options
 
-| Option             | Description                                            |
-| ------------------ | ------------------------------------------------------ |
-| `--token TOKEN`    | Authentication token from HackerAI Settings (required) |
-| `--name NAME`      | Optional connection name fallback (default: hostname)  |
-| `--convex-url URL` | Override backend URL (for development)                 |
-| `--help, -h`       | Show help message                                      |
+| Option             | Description                                                 |
+| ------------------ | ----------------------------------------------------------- |
+| `--token TOKEN`    | Authentication token from DefensDark AI Settings (required) |
+| `--name NAME`      | Optional connection name fallback (default: hostname)       |
+| `--convex-url URL` | Override backend URL (for development)                      |
+| `--help, -h`       | Show help message                                           |
 
 ## Getting Your Token
 
-1. Go to [HackerAI Settings](https://hackerai.co/settings)
+1. Go to [DefensDark AI Settings](https://defensdark-ai.co/settings)
 2. Navigate to the "Agents" tab
 3. Click "Generate Token" or copy your existing token
 

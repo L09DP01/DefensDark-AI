@@ -603,8 +603,8 @@ export class HybridSandboxManager implements SandboxManager {
 
       const uploadPath =
         platform === "win32"
-          ? "C:\\temp\\hackerai-upload"
-          : "/tmp/hackerai-upload";
+          ? "C:\\temp\\defensdark-ai-upload"
+          : "/tmp/defensdark-ai-upload";
 
       return `<sandbox_environment>
 IMPORTANT: You are connected to a LOCAL machine in DANGEROUS MODE. Commands run directly on the host OS without Docker isolation.

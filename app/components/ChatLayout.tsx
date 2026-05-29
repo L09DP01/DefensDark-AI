@@ -125,7 +125,7 @@ export function ChatLayout({ children }: { children: React.ReactNode }) {
       {isMobile === false && (
         <div
           data-testid="sidebar"
-          className={`relative z-10 min-w-0 shrink-0 overflow-hidden bg-sidebar transition-all duration-300 ${
+          className={`relative z-10 min-w-0 shrink-0 overflow-hidden glass transition-all duration-300 ${
             chatSidebarOpen ? "w-72" : "w-12"
           }`}
         >

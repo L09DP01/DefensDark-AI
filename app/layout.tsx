@@ -20,11 +20,11 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const APP_NAME = "HackerAI";
-const APP_DEFAULT_TITLE = "HackerAI - AI-Powered Penetration Testing Assistant";
-const APP_TITLE_TEMPLATE = "%s | HackerAI";
+const APP_NAME = "DefensDark AI";
+const APP_DEFAULT_TITLE = "DefensDark AI - AI-Powered Cyber Defense Platform";
+const APP_TITLE_TEMPLATE = "%s | DefensDark AI";
 const APP_DESCRIPTION =
-  "HackerAI is an AI pentesting assistant that helps you scan targets, exploit vulnerabilities, analyze findings, and write reports faster.";
+  "DefensDark AI is an AI-powered cyber defense platform that helps you secure systems, scan targets, analyze vulnerabilities, and write reports faster.";
 
 export const metadata: Metadata = {
   applicationName: APP_NAME,
@@ -35,9 +35,10 @@ export const metadata: Metadata = {
   description: APP_DESCRIPTION,
   manifest: "/manifest.json",
   keywords: [
-    "hackerai",
+    "defensdark-ai",
+    "defensdark ai",
+    "cyber defense platform",
     "pentestgpt",
-    "hacker ai",
     "pentest ai",
     "penetration testing tool",
     "penetration testing ai",
@@ -63,10 +64,10 @@ export const metadata: Metadata = {
     description: APP_DESCRIPTION,
     images: [
       {
-        url: "https://hackerai.co/icon-512x512.png",
+        url: "https://defensdark-ai.co/icon-512x512.png",
         width: 512,
         height: 512,
-        alt: "HackerAI",
+        alt: "DefensDark AI",
       },
     ],
   },
@@ -79,10 +80,10 @@ export const metadata: Metadata = {
     description: APP_DESCRIPTION,
     images: [
       {
-        url: "https://hackerai.co/icon-512x512.png",
+        url: "https://defensdark-ai.co/icon-512x512.png",
         width: 512,
         height: 512,
-        alt: "HackerAI",
+        alt: "DefensDark AI",
       },
     ],
   },

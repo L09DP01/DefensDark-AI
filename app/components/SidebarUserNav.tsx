@@ -42,7 +42,8 @@ import { clientLogout } from "@/lib/utils/logout";
 import { openSettingsDialog } from "@/lib/utils/settings-dialog";
 
 const NEXT_PUBLIC_HELP_CENTER_URL =
-  process.env.NEXT_PUBLIC_HELP_CENTER_URL || "https://help.hackerai.co/en/";
+  process.env.NEXT_PUBLIC_HELP_CENTER_URL ||
+  "https://help.defensdark-ai.co/en/";
 
 const GithubIcon = ({ className, ...props }: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" fill="currentColor" className={className} {...props}>
@@ -191,7 +192,7 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
 
   const handleGitHub = () => {
     const newWindow = window.open(
-      "https://github.com/hackerai-tech/hackerai",
+      "https://github.com/defensdark-ai-tech/defensdark-ai",
       "_blank",
       "noopener,noreferrer",
     );

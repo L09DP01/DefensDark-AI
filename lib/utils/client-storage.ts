@@ -19,7 +19,7 @@ export type ConversationDraftStore = {
 export const CONVERSATION_DRAFTS_STORAGE_KEY = "conversation_drafts";
 export const NULL_THREAD_DRAFT_ID = "null_thread";
 export const CHAT_MODE_STORAGE_KEY = "chat_mode";
-const HAS_AUTHENTICATED_BEFORE_STORAGE_KEY = "hackerai_has_authed_before";
+const HAS_AUTHENTICATED_BEFORE_STORAGE_KEY = "defensdark-ai_has_authed_before";
 const SELECTED_MODEL_STORAGE_KEY = "selected_model";
 
 const isBrowser = (): boolean => typeof window !== "undefined";
@@ -96,8 +96,8 @@ export const hasAuthenticatedBefore = (): boolean => {
  * Migrates two flavors of legacy values when present:
  *   1. Per-mode keys from before the unified preference: `selected_model_ask`
  *      and `selected_model_agent`.
- *   2. Underlying-model ids from before the HackerAI tier rebrand
- *      (e.g. `"opus-4.6"` → `"hackerai-max"`) — handled by `coerceSelectedModel`.
+ *   2. Underlying-model ids from before the DefensDark AI tier rebrand
+ *      (e.g. `"opus-4.6"` → `"defensdark-ai-max"`) — handled by `coerceSelectedModel`.
  * Both kinds are rewritten to the unified key in their new form so the
  * migration is a one-shot.
  */

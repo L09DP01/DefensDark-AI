@@ -153,7 +153,7 @@ export const ContextUsageIndicator = ({
             tokens used
           </div>
           <div className="text-xs text-muted-foreground pt-1">
-            HackerAI automatically compacts its context
+            DefensDark AI automatically compacts its context
           </div>
         </PopoverContent>
       </Popover>

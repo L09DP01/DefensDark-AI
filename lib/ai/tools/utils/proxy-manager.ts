@@ -307,7 +307,7 @@ async function doEnsureCaido(
   const createB64 = Buffer.from(
     JSON.stringify({
       query:
-        'mutation { createProject(input: {name: "hackerai", temporary: true}) { project { id } error { ... on NameTakenUserError { code } ... on PermissionDeniedUserError { code } ... on OtherUserError { code } } } }',
+        'mutation { createProject(input: {name: "defensdark-ai", temporary: true}) { project { id } error { ... on NameTakenUserError { code } ... on PermissionDeniedUserError { code } ... on OtherUserError { code } } } }',
     }),
   ).toString("base64");
 
@@ -394,10 +394,10 @@ async function doEnsureCaido(
     `if [ -z "$TOKEN" ]; then echo "needs_start" && exit 0; fi`,
     `printf '%s' "$TOKEN" > "$TOKEN_FILE"`,
     ``,
-    `# Find or create the "hackerai" project`,
+    `# Find or create the "defensdark-ai" project`,
     `PROJECTS=$(echo '${listProjectsB64}' | base64 -d | curl -sL --noproxy '*' --connect-timeout 5 --max-time 10 -X POST "$CAIDO_API/graphql" \\`,
     `  -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" --data @-)`,
-    `PROJECT_ID=$(echo "$PROJECTS" | grep -o '"id":"[^"]*","name":"hackerai"' | grep -Eo '"id":"[^"]*"' | cut -d'"' -f4 || echo "")`,
+    `PROJECT_ID=$(echo "$PROJECTS" | grep -o '"id":"[^"]*","name":"defensdark-ai"' | grep -Eo '"id":"[^"]*"' | cut -d'"' -f4 || echo "")`,
     `if [ -z "$PROJECT_ID" ]; then`,
     `  CREATE=$(echo '${createB64}' | base64 -d | curl -sL --noproxy '*' -X POST "$CAIDO_API/graphql" --connect-timeout 5 --max-time 20 \\`,
     `    -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" --data @-)`,

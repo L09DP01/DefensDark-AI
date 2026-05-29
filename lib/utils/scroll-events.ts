@@ -1,1 +1,1 @@
-export const STICKY_BOTTOM_ESCAPE_EVENT = "hackerai:escape-sticky-bottom";
+export const STICKY_BOTTOM_ESCAPE_EVENT = "defensdark-ai:escape-sticky-bottom";

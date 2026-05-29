@@ -1,21 +1,21 @@
 import {
   isLegacyDesktopAgentClient,
-  isHackerAIDesktopUserAgent,
+  isDefensDarkAIDesktopUserAgent,
   shouldUseAgentLongForAgent,
 } from "../agent-routing";
 
 const DESKTOP_UA =
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15 HackerAI-Desktop/1.0";
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15 DefensDark AI-Desktop/1.0";
 
 describe("agent routing", () => {
-  test("detects the HackerAI desktop user agent token", () => {
-    expect(isHackerAIDesktopUserAgent(DESKTOP_UA)).toBe(true);
-    expect(isHackerAIDesktopUserAgent("Mozilla/5.0 Safari/605.1.15")).toBe(
+  test("detects the DefensDark AI desktop user agent token", () => {
+    expect(isDefensDarkAIDesktopUserAgent(DESKTOP_UA)).toBe(true);
+    expect(isDefensDarkAIDesktopUserAgent("Mozilla/5.0 Safari/605.1.15")).toBe(
       false,
     );
   });
 
-  test("routes desktop agent mode with the HackerAI user agent through agent-long", () => {
+  test("routes desktop agent mode with the DefensDark AI user agent through agent-long", () => {
     expect(
       shouldUseAgentLongForAgent({
         mode: "agent",

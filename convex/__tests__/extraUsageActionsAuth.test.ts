@@ -103,7 +103,7 @@ async function callCreatePurchaseSession(ctx: any) {
   const { createPurchaseSession } = await import("../extraUsageActions");
   return (createPurchaseSession as any).handler(ctx, {
     amountDollars: 15,
-    baseUrl: "https://hackerai.example/settings",
+    baseUrl: "https://defensdark-ai.example/settings",
   });
 }
 
@@ -111,7 +111,7 @@ async function callCreateBillingPortalSession(ctx: any) {
   const { createBillingPortalSession } = await import("../extraUsageActions");
   return (createBillingPortalSession as any).handler(ctx, {
     flow: "payment_method",
-    baseUrl: "https://hackerai.example/settings",
+    baseUrl: "https://defensdark-ai.example/settings",
   });
 }
 

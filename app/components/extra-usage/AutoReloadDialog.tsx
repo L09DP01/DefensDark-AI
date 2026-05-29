@@ -146,9 +146,9 @@ const AutoReloadDialogContent = ({
           </div>
         </div>
         <p className="text-sm text-muted-foreground">
-          You agree that HackerAI will charge the card you have on file in the
-          amount above on a recurring basis whenever your balance reaches the
-          amount indicated. To cancel, turn off auto-reload.
+          You agree that DefensDark AI will charge the card you have on file in
+          the amount above on a recurring basis whenever your balance reaches
+          the amount indicated. To cancel, turn off auto-reload.
         </p>
       </div>
       <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:justify-end">

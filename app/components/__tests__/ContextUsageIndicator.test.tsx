@@ -109,7 +109,7 @@ describe("ContextUsageIndicator", () => {
       expect(screen.getByText("4% used (96% left)")).toBeInTheDocument();
       expect(screen.getByText("8.5k / 200k tokens used")).toBeInTheDocument();
       expect(
-        screen.getByText("HackerAI automatically compacts its context"),
+        screen.getByText("DefensDark AI automatically compacts its context"),
       ).toBeInTheDocument();
     });
   });

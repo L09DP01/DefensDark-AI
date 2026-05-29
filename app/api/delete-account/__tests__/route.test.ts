@@ -83,7 +83,9 @@ const mockDeleteCustomer = stripe.customers.del as jest.MockedFunction<
   typeof stripe.customers.del
 >;
 
-const request = () => ({ url: "https://hackerai.test/api/delete-account" });
+const request = () => ({
+  url: "https://defensdark-ai.test/api/delete-account",
+});
 
 describe("POST /api/delete-account", () => {
   beforeEach(() => {

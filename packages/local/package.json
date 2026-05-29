@@ -1,9 +1,9 @@
 {
-  "name": "@hackerai/local",
+  "name": "@defensdark-ai/local",
   "version": "0.8.2",
-  "description": "HackerAI Local Sandbox Client - Execute commands on your local machine",
+  "description": "DefensDark AI Local Sandbox Client - Execute commands on your local machine",
   "bin": {
-    "hackerai-local": "./dist/index.js"
+    "defensdark-ai-local": "./dist/index.js"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -16,17 +16,17 @@
     "prepublishOnly": "npm run build"
   },
   "keywords": [
-    "hackerai",
+    "defensdark-ai",
     "sandbox",
     "pentesting",
     "security",
     "cli"
   ],
-  "author": "HackerAI",
+  "author": "DefensDark AI",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/hackerai-tech/hackerai.git",
+    "url": "https://github.com/defensdark-ai-tech/defensdark-ai.git",
     "directory": "packages/local"
   },
   "engines": {

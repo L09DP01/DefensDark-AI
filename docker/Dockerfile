@@ -1,9 +1,9 @@
 FROM kalilinux/kali-rolling
 
-LABEL org.opencontainers.image.title="HackerAI Agent Sandbox"
+LABEL org.opencontainers.image.title="DefensDark AI Agent Sandbox"
 LABEL org.opencontainers.image.description="AI Agent Penetration Testing Environment with Comprehensive Automated Tools"
-LABEL org.opencontainers.image.source="https://github.com/hackerai-tech/hackerai"
-LABEL org.opencontainers.image.vendor="HackerAI"
+LABEL org.opencontainers.image.source="https://github.com/defensdark-ai-tech/defensdark-ai"
+LABEL org.opencontainers.image.vendor="DefensDark AI"
 
 # ============================================================================
 # Environment Variables
@@ -158,7 +158,7 @@ WORKDIR /home/user
 
 # Ensure Go bin paths are in PATH for login shells (su - user, bash -l)
 RUN printf 'export PATH=/home/user/.local/bin:/usr/local/go/bin:/home/user/go/bin:$PATH\n' \
-    > /etc/profile.d/00-hackerai-path.sh && chmod 644 /etc/profile.d/00-hackerai-path.sh
+    > /etc/profile.d/00-defensdark-ai-path.sh && chmod 644 /etc/profile.d/00-defensdark-ai-path.sh
 
 # ============================================================================
 # Python Packages for Document Generation & Security Tools

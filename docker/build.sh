@@ -1,14 +1,14 @@
 #!/bin/bash
-# Build the HackerAI sandbox Docker image locally
+# Build the DefensDark AI sandbox Docker image locally
 # Usage: ./docker/build.sh [tag]
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TAG="${1:-latest}"
-IMAGE_NAME="hackerai/sandbox:${TAG}"
+IMAGE_NAME="defensdark-ai/sandbox:${TAG}"
 
-echo "🔨 Building HackerAI Sandbox image..."
+echo "🔨 Building DefensDark AI Sandbox image..."
 echo "   Tag: ${IMAGE_NAME}"
 echo ""
 

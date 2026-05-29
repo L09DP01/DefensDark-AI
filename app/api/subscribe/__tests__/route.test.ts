@@ -83,7 +83,7 @@ function makeRequest(body: Record<string, unknown> = {}) {
 describe("POST /api/subscribe", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    process.env.NEXT_PUBLIC_BASE_URL = "https://hackerai.example";
+    process.env.NEXT_PUBLIC_BASE_URL = "https://defensdark-ai.example";
 
     mockGetUserID.mockResolvedValue("user_123" as never);
     mockGetUser.mockResolvedValue({

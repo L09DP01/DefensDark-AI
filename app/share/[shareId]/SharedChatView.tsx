@@ -95,11 +95,11 @@ export function SharedChatView({ shareId }: SharedChatViewProps) {
   // Update page title when chat loads
   useEffect(() => {
     if (chat?.title) {
-      document.title = `${chat.title} | HackerAI`;
+      document.title = `${chat.title} | DefensDark AI`;
     }
 
     return () => {
-      document.title = "Shared Chat | HackerAI";
+      document.title = "Shared Chat | DefensDark AI";
     };
   }, [chat?.title]);
 

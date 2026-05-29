@@ -43,14 +43,14 @@ describe("desktop-local sandbox file helpers", () => {
   it("prepares trigger messages with staged attachment tags but no source path", () => {
     const { messages, sandboxFiles } = prepareLocalDesktopAttachmentsForTrigger(
       [makeLocalMessage()],
-      "/tmp/hackerai-upload",
+      "/tmp/defensdark-ai-upload",
     );
 
     expect(sandboxFiles).toEqual([
       {
         kind: "localPath",
         path: "/Users/alice/Secrets/report.pdf",
-        localPath: "/tmp/hackerai-upload/report.pdf",
+        localPath: "/tmp/defensdark-ai-upload/report.pdf",
       },
     ]);
     expect(JSON.stringify(messages)).not.toContain(
@@ -61,7 +61,7 @@ describe("desktop-local sandbox file helpers", () => {
         (part: any) =>
           part.type === "text" &&
           part.text ===
-            '<attachment filename="report.pdf" local_path="/tmp/hackerai-upload/report.pdf" />',
+            '<attachment filename="report.pdf" local_path="/tmp/defensdark-ai-upload/report.pdf" />',
       ),
     ).toBe(true);
   });
@@ -75,7 +75,7 @@ describe("desktop-local sandbox file helpers", () => {
         {
           kind: "localPath",
           path: "/Users/alice/Secrets/report.pdf",
-          localPath: "/tmp/hackerai-upload/report.pdf",
+          localPath: "/tmp/defensdark-ai-upload/report.pdf",
         },
       ],
       async () => ({
@@ -86,7 +86,7 @@ describe("desktop-local sandbox file helpers", () => {
     expect(result.failedCount).toBe(0);
     expect(copyLocal).toHaveBeenCalledWith(
       "/Users/alice/Secrets/report.pdf",
-      "/tmp/hackerai-upload/report.pdf",
+      "/tmp/defensdark-ai-upload/report.pdf",
     );
     expect(downloadFromUrl).not.toHaveBeenCalled();
   });
@@ -103,7 +103,7 @@ describe("desktop-local sandbox file helpers", () => {
           {
             kind: "localPath",
             path: sourcePath,
-            localPath: "/tmp/hackerai-upload/report.pdf",
+            localPath: "/tmp/defensdark-ai-upload/report.pdf",
           },
         ],
         async () => ({
@@ -135,13 +135,13 @@ describe("desktop-local sandbox file helpers", () => {
       .fn()
       .mockRejectedValueOnce(
         new Error(
-          "Failed to download file: mkdir: cannot create directory '/tmp/hackerai-upload': Permission denied",
+          "Failed to download file: mkdir: cannot create directory '/tmp/defensdark-ai-upload': Permission denied",
         ),
       )
       .mockResolvedValueOnce(undefined);
     const run = jest.fn().mockResolvedValue({
       exitCode: 0,
-      stdout: "/home/alice/hackerai-upload/report.pdf",
+      stdout: "/home/alice/defensdark-ai-upload/report.pdf",
       stderr: "",
     });
 
@@ -151,7 +151,7 @@ describe("desktop-local sandbox file helpers", () => {
           {
             kind: "url",
             url: "https://example.com/report.pdf",
-            localPath: "/tmp/hackerai-upload/report.pdf",
+            localPath: "/tmp/defensdark-ai-upload/report.pdf",
           },
         ],
         async () => ({
@@ -164,18 +164,18 @@ describe("desktop-local sandbox file helpers", () => {
         failedCount: 0,
         pathRewrites: [
           {
-            from: "/tmp/hackerai-upload/report.pdf",
-            to: "/home/alice/hackerai-upload/report.pdf",
+            from: "/tmp/defensdark-ai-upload/report.pdf",
+            to: "/home/alice/defensdark-ai-upload/report.pdf",
           },
         ],
       });
       expect(downloadFromUrl).toHaveBeenCalledWith(
         "https://example.com/report.pdf",
-        "/tmp/hackerai-upload/report.pdf",
+        "/tmp/defensdark-ai-upload/report.pdf",
       );
       expect(downloadFromUrl).toHaveBeenCalledWith(
         "https://example.com/report.pdf",
-        "/home/alice/hackerai-upload/report.pdf",
+        "/home/alice/defensdark-ai-upload/report.pdf",
       );
     } finally {
       consoleWarnSpy.mockRestore();
@@ -190,7 +190,7 @@ describe("desktop-local sandbox file helpers", () => {
         parts: [
           {
             type: "text",
-            text: '<attachment filename="report.pdf" local_path="/tmp/hackerai-upload/report.pdf" />',
+            text: '<attachment filename="report.pdf" local_path="/tmp/defensdark-ai-upload/report.pdf" />',
           },
         ],
       },
@@ -198,13 +198,13 @@ describe("desktop-local sandbox file helpers", () => {
 
     const rewritten = rewriteSandboxFilePathsInMessages(messages, [
       {
-        from: "/tmp/hackerai-upload/report.pdf",
-        to: "/home/alice/hackerai-upload/report.pdf",
+        from: "/tmp/defensdark-ai-upload/report.pdf",
+        to: "/home/alice/defensdark-ai-upload/report.pdf",
       },
     ]);
 
     expect(rewritten[0].parts?.[0]).toMatchObject({
-      text: '<attachment filename="report.pdf" local_path="/home/alice/hackerai-upload/report.pdf" />',
+      text: '<attachment filename="report.pdf" local_path="/home/alice/defensdark-ai-upload/report.pdf" />',
     });
   });
 });

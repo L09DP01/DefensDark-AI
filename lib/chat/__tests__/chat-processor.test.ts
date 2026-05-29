@@ -183,51 +183,53 @@ describe("selectModel", () => {
 
   // Tier override — Pro/Max map to the same provider key in both modes
   describe("tier override for ask mode (paid users)", () => {
-    it("should map HackerAI Pro to Sonnet 4.6 in ask mode", () => {
-      expect(selectModel("ask", "ultra", "hackerai-pro")).toBe(
+    it("should map DefensDark AI Pro to Sonnet 4.6 in ask mode", () => {
+      expect(selectModel("ask", "ultra", "defensdark-ai-pro")).toBe(
         "model-sonnet-4.6",
       );
     });
 
-    it("should map HackerAI Pro to Sonnet 4.6 for team users", () => {
-      expect(selectModel("ask", "team", "hackerai-pro")).toBe(
+    it("should map DefensDark AI Pro to Sonnet 4.6 for team users", () => {
+      expect(selectModel("ask", "team", "defensdark-ai-pro")).toBe(
         "model-sonnet-4.6",
       );
     });
 
-    it("should map HackerAI Standard to DeepSeek V4 Flash when no image/PDF", () => {
-      expect(selectModel("ask", "pro", "hackerai-standard")).toBe(
+    it("should map DefensDark AI Standard to DeepSeek V4 Flash when no image/PDF", () => {
+      expect(selectModel("ask", "pro", "defensdark-ai-standard")).toBe(
         "model-deepseek-v4-flash",
       );
     });
 
-    it("should promote HackerAI Standard to Gemini 3 Flash when an image/PDF is attached", () => {
-      expect(selectModel("ask", "pro", "hackerai-standard", true)).toBe(
+    it("should promote DefensDark AI Standard to Gemini 3 Flash when an image/PDF is attached", () => {
+      expect(selectModel("ask", "pro", "defensdark-ai-standard", true)).toBe(
         "model-gemini-3-flash",
       );
     });
 
-    it("should map HackerAI Max to Opus 4.6", () => {
-      expect(selectModel("ask", "pro", "hackerai-max")).toBe("model-opus-4.6");
+    it("should map DefensDark AI Max to Opus 4.6", () => {
+      expect(selectModel("ask", "pro", "defensdark-ai-max")).toBe(
+        "model-opus-4.6",
+      );
     });
   });
 
   // Agent mode — Lite resolves to Kimi instead of Gemini
   describe("tier override in agent mode", () => {
-    it("should map HackerAI Standard to Kimi K2.6 in agent mode", () => {
-      expect(selectModel("agent", "pro", "hackerai-standard")).toBe(
+    it("should map DefensDark AI Standard to Kimi K2.6 in agent mode", () => {
+      expect(selectModel("agent", "pro", "defensdark-ai-standard")).toBe(
         "model-kimi-k2.6",
       );
     });
 
-    it("should map HackerAI Pro to Sonnet 4.6 in agent mode", () => {
-      expect(selectModel("agent", "pro", "hackerai-pro")).toBe(
+    it("should map DefensDark AI Pro to Sonnet 4.6 in agent mode", () => {
+      expect(selectModel("agent", "pro", "defensdark-ai-pro")).toBe(
         "model-sonnet-4.6",
       );
     });
 
-    it("should map HackerAI Max to Opus 4.6 in agent mode", () => {
-      expect(selectModel("agent", "pro", "hackerai-max")).toBe(
+    it("should map DefensDark AI Max to Opus 4.6 in agent mode", () => {
+      expect(selectModel("agent", "pro", "defensdark-ai-max")).toBe(
         "model-opus-4.6",
       );
     });
@@ -241,13 +243,15 @@ describe("selectModel", () => {
   // Free user guard
   describe("free user guard", () => {
     it("should ignore tier override for free users in agent mode", () => {
-      expect(selectModel("agent", "free", "hackerai-pro")).toBe(
+      expect(selectModel("agent", "free", "defensdark-ai-pro")).toBe(
         "agent-model-free",
       );
     });
 
     it("should ignore tier override for free users in ask mode", () => {
-      expect(selectModel("ask", "free", "hackerai-pro")).toBe("ask-model-free");
+      expect(selectModel("ask", "free", "defensdark-ai-pro")).toBe(
+        "ask-model-free",
+      );
     });
   });
 

@@ -1,13 +1,13 @@
 #!/bin/bash
-# HackerAI Agent Sandbox - Docker Run Script
+# DefensDark AI Agent Sandbox - Docker Run Script
 # This script runs the container with required capabilities for penetration testing tools
 
 set -e
 
-IMAGE_NAME="${1:-hackerai-sandbox}"
-CONTAINER_NAME="${2:-hackerai-agent}"
+IMAGE_NAME="${1:-defensdark-ai-sandbox}"
+CONTAINER_NAME="${2:-defensdark-ai-agent}"
 
-echo "🚀 Starting HackerAI Agent Sandbox..."
+echo "🚀 Starting DefensDark AI Agent Sandbox..."
 echo "   Image: $IMAGE_NAME"
 echo "   Container: $CONTAINER_NAME"
 

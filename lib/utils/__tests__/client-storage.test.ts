@@ -22,8 +22,8 @@ describe("client-storage selected model", () => {
     });
 
     it("returns the value stored under the unified key", () => {
-      window.localStorage.setItem(STORAGE_KEY, "hackerai-pro");
-      expect(readSelectedModel()).toBe("hackerai-pro");
+      window.localStorage.setItem(STORAGE_KEY, "defensdark-ai-pro");
+      expect(readSelectedModel()).toBe("defensdark-ai-pro");
     });
 
     it("rejects invalid stored values", () => {
@@ -31,35 +31,37 @@ describe("client-storage selected model", () => {
       expect(readSelectedModel()).toBeNull();
     });
 
-    it("migrates legacy underlying-model ids to HackerAI tiers", () => {
+    it("migrates legacy underlying-model ids to DefensDark AI tiers", () => {
       window.localStorage.setItem(STORAGE_KEY, "opus-4.6");
-      expect(readSelectedModel()).toBe("hackerai-max");
+      expect(readSelectedModel()).toBe("defensdark-ai-max");
       // The migration rewrites the unified key to the tier id.
-      expect(window.localStorage.getItem(STORAGE_KEY)).toBe("hackerai-max");
-    });
-
-    it("maps legacy gemini-3-flash and kimi-k2.6 both to hackerai-standard", () => {
-      window.localStorage.setItem(STORAGE_KEY, "gemini-3-flash");
-      expect(readSelectedModel()).toBe("hackerai-standard");
-
-      window.localStorage.setItem(STORAGE_KEY, "kimi-k2.6");
-      expect(readSelectedModel()).toBe("hackerai-standard");
-    });
-
-    it("migrates the short-lived hackerai-lite tier id to hackerai-standard", () => {
-      window.localStorage.setItem(STORAGE_KEY, "hackerai-lite");
-      expect(readSelectedModel()).toBe("hackerai-standard");
       expect(window.localStorage.getItem(STORAGE_KEY)).toBe(
-        "hackerai-standard",
+        "defensdark-ai-max",
       );
     });
 
-    it("migrates removed Grok ids to hackerai-standard", () => {
+    it("maps legacy gemini-3-flash and kimi-k2.6 both to defensdark-ai-standard", () => {
+      window.localStorage.setItem(STORAGE_KEY, "gemini-3-flash");
+      expect(readSelectedModel()).toBe("defensdark-ai-standard");
+
+      window.localStorage.setItem(STORAGE_KEY, "kimi-k2.6");
+      expect(readSelectedModel()).toBe("defensdark-ai-standard");
+    });
+
+    it("migrates the short-lived defensdark-ai-lite tier id to defensdark-ai-standard", () => {
+      window.localStorage.setItem(STORAGE_KEY, "defensdark-ai-lite");
+      expect(readSelectedModel()).toBe("defensdark-ai-standard");
+      expect(window.localStorage.getItem(STORAGE_KEY)).toBe(
+        "defensdark-ai-standard",
+      );
+    });
+
+    it("migrates removed Grok ids to defensdark-ai-standard", () => {
       window.localStorage.setItem(STORAGE_KEY, "grok-4.1");
-      expect(readSelectedModel()).toBe("hackerai-standard");
+      expect(readSelectedModel()).toBe("defensdark-ai-standard");
 
       window.localStorage.setItem(STORAGE_KEY, "grok-4.3");
-      expect(readSelectedModel()).toBe("hackerai-standard");
+      expect(readSelectedModel()).toBe("defensdark-ai-standard");
     });
 
     it("does not match inherited Object.prototype keys via the legacy map", () => {
@@ -79,8 +81,10 @@ describe("client-storage selected model", () => {
       window.localStorage.setItem(LEGACY_ASK_KEY, "opus-4.6");
       window.localStorage.setItem(LEGACY_AGENT_KEY, "sonnet-4.6");
 
-      expect(readSelectedModel()).toBe("hackerai-max");
-      expect(window.localStorage.getItem(STORAGE_KEY)).toBe("hackerai-max");
+      expect(readSelectedModel()).toBe("defensdark-ai-max");
+      expect(window.localStorage.getItem(STORAGE_KEY)).toBe(
+        "defensdark-ai-max",
+      );
       expect(window.localStorage.getItem(LEGACY_ASK_KEY)).toBeNull();
       expect(window.localStorage.getItem(LEGACY_AGENT_KEY)).toBeNull();
     });
@@ -88,9 +92,9 @@ describe("client-storage selected model", () => {
     it("falls back to legacy selected_model_agent key when ask is missing", () => {
       window.localStorage.setItem(LEGACY_AGENT_KEY, "kimi-k2.6");
 
-      expect(readSelectedModel()).toBe("hackerai-standard");
+      expect(readSelectedModel()).toBe("defensdark-ai-standard");
       expect(window.localStorage.getItem(STORAGE_KEY)).toBe(
-        "hackerai-standard",
+        "defensdark-ai-standard",
       );
       expect(window.localStorage.getItem(LEGACY_AGENT_KEY)).toBeNull();
     });
@@ -104,10 +108,10 @@ describe("client-storage selected model", () => {
     });
 
     it("does not migrate from legacy keys when unified key is already a tier id", () => {
-      window.localStorage.setItem(STORAGE_KEY, "hackerai-pro");
+      window.localStorage.setItem(STORAGE_KEY, "defensdark-ai-pro");
       window.localStorage.setItem(LEGACY_ASK_KEY, "opus-4.6");
 
-      expect(readSelectedModel()).toBe("hackerai-pro");
+      expect(readSelectedModel()).toBe("defensdark-ai-pro");
       // Legacy key is left alone when unified key is valid.
       expect(window.localStorage.getItem(LEGACY_ASK_KEY)).toBe("opus-4.6");
     });
@@ -115,14 +119,16 @@ describe("client-storage selected model", () => {
 
   describe("writeSelectedModel", () => {
     it("persists under the unified key", () => {
-      writeSelectedModel("hackerai-max");
-      expect(window.localStorage.getItem(STORAGE_KEY)).toBe("hackerai-max");
+      writeSelectedModel("defensdark-ai-max");
+      expect(window.localStorage.getItem(STORAGE_KEY)).toBe(
+        "defensdark-ai-max",
+      );
     });
   });
 
   describe("clearSelectedModelFromStorage", () => {
     it("removes the unified key and legacy per-mode keys", () => {
-      window.localStorage.setItem(STORAGE_KEY, "hackerai-pro");
+      window.localStorage.setItem(STORAGE_KEY, "defensdark-ai-pro");
       window.localStorage.setItem(LEGACY_ASK_KEY, "opus-4.6");
       window.localStorage.setItem(LEGACY_AGENT_KEY, "kimi-k2.6");
 

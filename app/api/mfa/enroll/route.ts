@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
     const result = await workos.multiFactorAuth.createUserAuthFactor({
       userId: userId,
       type: "totp",
-      totpIssuer: "HackerAI",
+      totpIssuer: "DefensDark AI",
     });
 
     // Return factor and challenge details

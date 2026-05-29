@@ -12,6 +12,27 @@ import {
   MAX_OUTPUT_SIZE,
   getDefaultShell,
 } from "../utils";
+import * as fs from "fs";
+import * as cp from "child_process";
+
+jest.mock("fs", () => {
+  const original = jest.requireActual("fs");
+  return {
+    ...original,
+    existsSync: jest.fn(),
+  };
+});
+
+jest.mock("child_process", () => {
+  const original = jest.requireActual("child_process");
+  return {
+    ...original,
+    execSync: jest.fn(),
+  };
+});
+
+const mockedExistsSync = fs.existsSync as jest.Mock;
+const mockedExecSync = cp.execSync as jest.Mock;
 
 describe("Output Truncation", () => {
   it("should not truncate content under max size", () => {
@@ -61,10 +82,34 @@ describe("Output Truncation", () => {
 });
 
 describe("Platform Shell Detection", () => {
-  it("should return cmd.exe for Windows", () => {
+  beforeEach(() => {
+    mockedExistsSync.mockReset();
+    mockedExecSync.mockReset();
+
+    // Fallback par défaut : faire comme si Git Bash n'était pas présent
+    mockedExistsSync.mockReturnValue(false);
+    mockedExecSync.mockImplementation(() => {
+      throw new Error("not found");
+    });
+  });
+
+  it("should return cmd.exe for Windows when Git Bash is not installed", () => {
     const result = getDefaultShell("win32");
     expect(result.shell).toBe("cmd.exe");
     expect(result.shellFlag).toBe("/C");
+  });
+
+  it("should return Git Bash path for Windows when Git Bash is installed", () => {
+    // Faire en sorte que existsSync retourne true pour le chemin d'accès Git Bash
+    mockedExistsSync.mockImplementation((path) => {
+      if (typeof path === "string" && path.includes("Git")) {
+        return true;
+      }
+      return false;
+    });
+    const result = getDefaultShell("win32");
+    expect(result.shell).toContain("bash.exe");
+    expect(result.shellFlag).toBe("-c");
   });
 
   it("should return bash for Linux", () => {

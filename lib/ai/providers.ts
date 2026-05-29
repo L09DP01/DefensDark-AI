@@ -78,18 +78,22 @@ export const modelCutoffDates: Record<ModelName, string> &
 
 export const modelDisplayNames: Record<ModelName, string> &
   Record<string, string> = {
-  "ask-model": "Auto, an intelligent model router built by HackerAI",
-  "ask-model-free": "Auto, an intelligent model router built by HackerAI",
-  "agent-model": "Auto, an intelligent model router built by HackerAI",
-  "agent-model-free": "Auto, an intelligent model router built by HackerAI",
+  "ask-model": "Auto, an intelligent model router built by DefensDark AI",
+  "ask-model-free": "Auto, an intelligent model router built by DefensDark AI",
+  "agent-model": "Auto, an intelligent model router built by DefensDark AI",
+  "agent-model-free":
+    "Auto, an intelligent model router built by DefensDark AI",
   "model-sonnet-4.6": "Anthropic Claude Sonnet 4.6",
   "model-gemini-3-flash": "Google Gemini 3 Flash",
   "model-deepseek-v4-flash": "DeepSeek V4 Flash",
   "model-opus-4.6": "Anthropic Claude Opus 4.6",
   "model-kimi-k2.6": "Moonshot Kimi K2.6",
-  "fallback-agent-model": "Auto, an intelligent model router built by HackerAI",
-  "fallback-ask-model": "Auto, an intelligent model router built by HackerAI",
-  "fallback-grok-4.3": "Auto, an intelligent model router built by HackerAI",
+  "fallback-agent-model":
+    "Auto, an intelligent model router built by DefensDark AI",
+  "fallback-ask-model":
+    "Auto, an intelligent model router built by DefensDark AI",
+  "fallback-grok-4.3":
+    "Auto, an intelligent model router built by DefensDark AI",
   "title-generator-model": "Google Gemini 2.5 Flash Lite",
 };
 
@@ -118,7 +122,7 @@ export function isGeminiModel(modelName: string): boolean {
 }
 
 /**
- * Map a HackerAI tier id to the underlying provider key for a given mode.
+ * Map a DefensDark AI tier id to the underlying provider key for a given mode.
  * Returns `null` for `"auto"` (the caller routes to the auto-router model
  * key instead). The Pro/Max tiers map to the same model in both modes; only
  * Lite differs (Gemini 3 Flash for ask, Kimi K2.6 for agent).
@@ -129,11 +133,11 @@ export function resolveTierToProviderKey(
 ): ModelName | null {
   if (tier === "auto") return null;
   switch (tier) {
-    case "hackerai-standard":
+    case "defensdark-ai-standard":
       return isAgentMode(mode) ? "model-kimi-k2.6" : "model-gemini-3-flash";
-    case "hackerai-pro":
+    case "defensdark-ai-pro":
       return "model-sonnet-4.6";
-    case "hackerai-max":
+    case "defensdark-ai-max":
       return "model-opus-4.6";
   }
 }

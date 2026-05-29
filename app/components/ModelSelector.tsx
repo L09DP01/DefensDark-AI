@@ -380,7 +380,7 @@ export function ModelSelector({ value, onChange, mode }: ModelSelectorProps) {
 
     if (
       isBaseProTier &&
-      option.id === "hackerai-max" &&
+      option.id === "defensdark-ai-max" &&
       !isProMaxUsageNoticeDismissed()
     ) {
       setPendingProMaxNotice(option);
@@ -426,8 +426,8 @@ export function ModelSelector({ value, onChange, mode }: ModelSelectorProps) {
         <AlertDialogHeader>
           <AlertDialogTitle>Higher usage</AlertDialogTitle>
           <AlertDialogDescription className="text-left">
-            HackerAI Max uses quota much faster than Standard or Pro. One long
-            task can use much of what&apos;s included on Pro.
+            DefensDark AI Max uses quota much faster than Standard or Pro. One
+            long task can use much of what&apos;s included on Pro.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

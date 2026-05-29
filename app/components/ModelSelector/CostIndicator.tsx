@@ -8,16 +8,16 @@ import { isAgentMode } from "@/lib/utils/mode-helpers";
 
 type CostTier = "low" | "medium" | "high" | "very-high";
 
-// Cost tier per HackerAI tier id. Standard is mode-aware: in ask it routes
+// Cost tier per DefensDark AI tier id. Standard is mode-aware: in ask it routes
 // through the cheap DeepSeek V4 Flash text path (low), in agent it runs on
 // Kimi K2.6 (medium).
 export function getCostTier(modelId: string, mode?: ChatMode): CostTier {
   switch (modelId) {
-    case "hackerai-standard":
+    case "defensdark-ai-standard":
       return mode && isAgentMode(mode) ? "medium" : "low";
-    case "hackerai-pro":
+    case "defensdark-ai-pro":
       return "high";
-    case "hackerai-max":
+    case "defensdark-ai-max":
       return "very-high";
     default:
       return "medium";

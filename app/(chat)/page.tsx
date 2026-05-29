@@ -18,7 +18,7 @@ import { navigateToAuth } from "../hooks/useTauri";
 import { useTypingAnimation } from "../hooks/useTypingAnimation";
 import { upsertDraft } from "@/lib/utils/client-storage";
 
-const LOGIN_TYPING_PREFIX = "Ask HackerAI to ";
+const LOGIN_TYPING_PREFIX = "Ask DefensDark AI to ";
 const LOGIN_TYPING_TAILS = [
   "find vulnerabilities in...",
   "audit the security of...",

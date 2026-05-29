@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="logo.png" width="150" alt="DefensDark AI Logo">
+  <img src="public/logo.png" width="150" alt="DefensDark AI Logo">
 </p>
 
 <h1 align="center">DefensDark AI</h1>

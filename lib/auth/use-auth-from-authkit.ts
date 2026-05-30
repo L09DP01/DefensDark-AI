@@ -132,9 +132,33 @@ export function useAuthFromAuthKit(
 
           // Legacy behavior: direct refresh without cross-tab coordination
           const newToken = await refresh();
+          if (newToken) {
+            try {
+              const payload = JSON.parse(
+                atob(
+                  newToken.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"),
+                ),
+              );
+              console.log("[JWT DEBUG] Token Payload:", payload);
+            } catch (e) {
+              console.log("[JWT DEBUG] Failed to decode:", e);
+            }
+          }
           return newToken ?? null;
         }
-        return (await getAccessToken()) ?? null;
+
+        const token = await getAccessToken();
+        if (token) {
+          try {
+            const payload = JSON.parse(
+              atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")),
+            );
+            console.log("[JWT DEBUG] Token Payload:", payload);
+          } catch (e) {
+            console.log("[JWT DEBUG] Failed to decode:", e);
+          }
+        }
+        return token ?? null;
       } catch {
         // On network errors during laptop wake, fall back to cached token.
         // Even if expired, Convex will treat it like null and clear auth.

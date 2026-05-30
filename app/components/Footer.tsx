@@ -11,13 +11,15 @@ const Footer: React.FC = () => {
   }
 
   return (
-    <div className="text-muted-foreground relative flex min-h-8 w-full items-center justify-center p-4 text-center text-xs md:px-[60px] flex-shrink-0">
-      <span className="text-sm leading-none">
+    <div className="relative flex min-h-8 w-full items-center justify-center p-4 text-center text-xs md:px-[60px] flex-shrink-0">
+      {/* Gradient separator line */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2/3 h-px bg-gradient-to-r from-transparent via-[rgba(0,140,255,0.2)] to-transparent" />
+      <span className="text-sm leading-none text-muted-foreground/70">
         By messaging DefensDark AI, you agree to our{" "}
         <a
           href="/terms-of-service"
           target="_blank"
-          className="text-foreground underline decoration-foreground"
+          className="text-[rgba(0,180,255,0.8)] hover:text-[rgba(0,200,255,1)] underline decoration-[rgba(0,140,255,0.3)] underline-offset-2 transition-colors"
           rel="noreferrer"
         >
           Terms
@@ -26,7 +28,7 @@ const Footer: React.FC = () => {
         <a
           href="/privacy-policy"
           target="_blank"
-          className="text-foreground underline decoration-foreground"
+          className="text-[rgba(0,180,255,0.8)] hover:text-[rgba(0,200,255,1)] underline decoration-[rgba(0,140,255,0.3)] underline-offset-2 transition-colors"
           rel="noreferrer"
         >
           Privacy Policy

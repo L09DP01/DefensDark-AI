@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { ChatInput } from "../components/ChatInput";
 import Header from "../components/Header";
@@ -17,6 +18,7 @@ import { usePentestgptMigration } from "../hooks/usePentestgptMigration";
 import { navigateToAuth } from "../hooks/useTauri";
 import { useTypingAnimation } from "../hooks/useTypingAnimation";
 import { upsertDraft } from "@/lib/utils/client-storage";
+import { Shield, Search, FileText, Bug, Code, Lock } from "lucide-react";
 
 const LOGIN_TYPING_PREFIX = "Ask DefensDark AI to ";
 const LOGIN_TYPING_TAILS = [
@@ -26,6 +28,15 @@ const LOGIN_TYPING_TAILS = [
   "review the code of...",
   "write a pentest report for...",
   "hunt for bugs in...",
+];
+
+const FEATURE_BADGES = [
+  { icon: FileText, label: "Pentest Reports" },
+  { icon: Search, label: "Vulnerability Scanning" },
+  { icon: Code, label: "Code Audit" },
+  { icon: Bug, label: "Bug Hunting" },
+  { icon: Lock, label: "Security Analysis" },
+  { icon: Shield, label: "Threat Detection" },
 ];
 
 // Simple unauthenticated content that redirects to signup on message send
@@ -67,26 +78,80 @@ const UnauthenticatedContent = () => {
   }, []);
 
   return (
-    <div className="h-full bg-background flex flex-col overflow-hidden">
-      <div className="flex-shrink-0">
+    <div className="h-full bg-background flex flex-col overflow-hidden relative">
+      {/* Background radial glow */}
+      <div
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse at center, rgba(0, 100, 255, 0.08) 0%, rgba(0, 60, 180, 0.03) 40%, transparent 70%)",
+        }}
+      />
+
+      <div className="flex-shrink-0 relative z-10">
         <Header />
       </div>
 
-      <div className="flex-1 flex flex-col min-h-0">
+      <div className="flex-1 flex flex-col min-h-0 relative z-10">
         {/* Centered content area */}
-        <div className="flex-1 flex flex-col items-center justify-center px-6 py-[15vh] pb-[18vh] min-h-0">
+        <div className="flex-1 flex flex-col items-center justify-center px-6 py-[10vh] pb-[14vh] min-h-0">
+          {/* Logo with glow */}
+          <div className="relative mb-6 animate-fade-in-up">
+            {/* Glow behind logo */}
+            <div
+              className="absolute inset-0 animate-glow-pulse rounded-full"
+              style={{
+                background:
+                  "radial-gradient(circle, rgba(0, 120, 255, 0.25) 0%, transparent 70%)",
+                transform: "scale(2.5)",
+              }}
+            />
+            <div className="relative animate-float">
+              <Image
+                src="/logo.png"
+                alt="DefensDark AI"
+                width={120}
+                height={120}
+                className="object-contain glow-blue"
+                priority
+              />
+            </div>
+          </div>
+
           {/* Title */}
-          <div className="mb-4 flex flex-col items-center px-4 text-center md:mb-6">
-            <h1 className="text-4xl font-bold text-foreground mb-2 md:text-5xl">
-              What will you hack today?
+          <div className="mb-3 flex flex-col items-center px-4 text-center animate-fade-in-up delay-200">
+            <h1 className="text-4xl font-bold text-foreground mb-2.5 md:text-5xl lg:text-6xl tracking-tight">
+              What will you{" "}
+              <span
+                className="bg-gradient-to-r from-[#0088ff] via-[#00c8ff] to-[#0088ff] bg-clip-text text-transparent bg-[length:200%_auto] animate-text-shimmer"
+                style={{ animationDuration: "3s" }}
+              >
+                hack
+              </span>{" "}
+              today?
             </h1>
-            <p className="text-muted-foreground text-lg leading-tight md:text-xl">
-              Find and fix vulnerabilities by chatting with AI.
+            <p className="text-muted-foreground text-base leading-relaxed md:text-lg max-w-xl">
+              AI-powered vulnerability detection, penetration testing, and
+              security analysis.
             </p>
           </div>
 
+          {/* Feature badges */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-8 max-w-2xl animate-fade-in-up delay-400">
+            {FEATURE_BADGES.map((badge, i) => (
+              <span
+                key={badge.label}
+                className="feature-badge animate-badge-slide inline-flex items-center gap-1.5"
+                style={{ animationDelay: `${400 + i * 80}ms` }}
+              >
+                <badge.icon className="w-3.5 h-3.5" />
+                {badge.label}
+              </span>
+            ))}
+          </div>
+
           {/* Input */}
-          <div className="w-full max-w-3xl">
+          <div className="w-full max-w-3xl animate-fade-in-up delay-700">
             <ChatInput
               onSubmit={handleSubmit}
               onStop={handleStop}

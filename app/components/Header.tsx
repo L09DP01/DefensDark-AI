@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { DefensDarkAISVG } from "@/components/icons/defensdark-ai-svg";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@workos-inc/authkit-nextjs/components";
 import { navigateToAuth } from "@/app/hooks/useTauri";
@@ -17,12 +17,19 @@ const Header: React.FC<HeaderProps> = ({ chatTitle, hideDownload = false }) => {
   const { user, loading } = useAuth();
 
   return (
-    <header className="w-full px-6 max-sm:px-4 flex-shrink-0">
+    <header className="w-full px-6 max-sm:px-4 flex-shrink-0 header-glass sticky top-0 z-50">
       {/* Desktop header */}
       <div className="py-[10px] flex gap-10 items-center justify-between max-md:hidden">
-        <div className="flex items-center gap-2">
-          <DefensDarkAISVG theme="dark" scale={0.15} />
-          <span className="text-foreground text-xl font-semibold">
+        <div className="flex items-center gap-2.5">
+          <Image
+            src="/logo.png"
+            alt="DefensDark AI"
+            width={32}
+            height={32}
+            className="object-contain"
+            priority
+          />
+          <span className="text-foreground text-xl font-semibold tracking-tight">
             DefensDark AI
           </span>
         </div>
@@ -80,8 +87,15 @@ const Header: React.FC<HeaderProps> = ({ chatTitle, hideDownload = false }) => {
       {/* Mobile header */}
       <div className="py-3 flex items-center justify-between md:hidden">
         <div className="flex items-center gap-2">
-          <DefensDarkAISVG theme="dark" scale={0.12} />
-          <span className="text-foreground text-lg font-semibold">
+          <Image
+            src="/logo.png"
+            alt="DefensDark AI"
+            width={28}
+            height={28}
+            className="object-contain"
+            priority
+          />
+          <span className="text-foreground text-lg font-semibold tracking-tight">
             DefensDark AI
           </span>
         </div>

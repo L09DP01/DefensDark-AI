@@ -33,6 +33,14 @@ const authConfig = {
           jwks: `https://api.workos.com/sso/jwks/${clientId}`,
           applicationID: clientId,
         },
+        // Specific Staging URL Issuer
+        {
+          type: "customJwt" as const,
+          issuer: `https://modest-dandelion-80-staging.authkit.app/`,
+          algorithm: "RS256" as const,
+          applicationID: clientId,
+          jwks: `https://api.workos.com/sso/jwks/${clientId}`,
+        },
       ]
     : [],
 };

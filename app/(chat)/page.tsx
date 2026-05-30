@@ -95,29 +95,6 @@ const UnauthenticatedContent = () => {
       <div className="flex-1 flex flex-col min-h-0 relative z-10">
         {/* Centered content area */}
         <div className="flex-1 flex flex-col items-center justify-center px-6 py-[10vh] pb-[14vh] min-h-0">
-          {/* Logo with glow */}
-          <div className="relative mb-6 animate-fade-in-up">
-            {/* Glow behind logo */}
-            <div
-              className="absolute inset-0 animate-glow-pulse rounded-full"
-              style={{
-                background:
-                  "radial-gradient(circle, rgba(0, 120, 255, 0.25) 0%, transparent 70%)",
-                transform: "scale(2.5)",
-              }}
-            />
-            <div className="relative animate-float">
-              <Image
-                src="/logo.png"
-                alt="DefensDark AI"
-                width={120}
-                height={120}
-                className="object-contain glow-blue"
-                priority
-              />
-            </div>
-          </div>
-
           {/* Title */}
           <div className="mb-3 flex flex-col items-center px-4 text-center animate-fade-in-up delay-200">
             <h1 className="text-4xl font-bold text-foreground mb-2.5 md:text-5xl lg:text-6xl tracking-tight">

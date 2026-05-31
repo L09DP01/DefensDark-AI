@@ -2,8 +2,8 @@
 
 import React, { useMemo, useState } from "react";
 import { useAuth } from "@workos-inc/authkit-nextjs/components";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { useMutation } from "@/lib/supabase/hooks";
+import { api } from "@/lib/supabase/api";
 import {
   Dialog,
   DialogContent,

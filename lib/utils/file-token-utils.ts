@@ -1,6 +1,6 @@
 import "server-only";
 
-import { api } from "@/convex/_generated/api";
+import { api } from "@/lib/supabase/api";
 import { getConvexClient } from "@/lib/db/convex-client";
 import { UIMessagePart, UIMessage } from "ai";
 import { Id } from "@/convex/_generated/dataModel";

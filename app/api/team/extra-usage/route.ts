@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { workos } from "../../workos";
-import { ConvexHttpClient } from "convex/browser";
-import { api } from "@/convex/_generated/api";
+import { ConvexHttpClient } from "@/lib/supabase/api";
+import { api } from "@/lib/supabase/api";
 import { requireAdminOrg } from "../team-auth";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
@@ -29,12 +29,12 @@ export const GET = async (req: NextRequest) => {
         .then((p) => p.autoPagination()),
     ]);
 
-    const usageByUserId = new Map(adminView.members.map((m) => [m.userId, m]));
+    const usageByUserId = new Map(adminView.members.map((m: any) => [m.userId, m]));
 
     const members = await Promise.all(
-      memberships.map(async (m) => {
+      memberships.map(async (m: any) => {
         const user = await workos.userManagement.getUser(m.userId);
-        const usage = usageByUserId.get(m.userId);
+        const usage: any = usageByUserId.get(m.userId);
         return {
           userId: m.userId,
           email: user.email,

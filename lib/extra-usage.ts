@@ -1,6 +1,6 @@
 import { POINTS_PER_DOLLAR } from "@/lib/rate-limit/token-bucket";
 import { getConvexClient } from "@/lib/db/convex-client";
-import { api } from "@/convex/_generated/api";
+import { api } from "@/lib/supabase/api";
 
 /** Extra usage pricing multiplier */
 export const EXTRA_USAGE_MULTIPLIER = 1.05;

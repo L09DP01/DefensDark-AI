@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { useMutation } from "@/lib/supabase/hooks";
+import { api } from "@/lib/supabase/api";
 import type { SandboxPreference } from "@/types/chat";
 import { toast } from "sonner";
 import { DesktopSandboxBridge } from "@/app/services/desktop-sandbox-bridge";

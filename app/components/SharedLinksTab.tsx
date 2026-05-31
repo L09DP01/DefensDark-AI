@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { useQuery, useMutation } from "@/lib/supabase/hooks";
+import { api } from "@/lib/supabase/api";
 import type { SharedChat } from "@/types";
 import {
   AlertDialog,

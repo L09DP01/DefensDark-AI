@@ -1,6 +1,6 @@
 import "server-only";
 
-import { api } from "@/convex/_generated/api";
+import { api } from "@/lib/supabase/api";
 import { getConvexClient } from "@/lib/db/convex-client";
 import { UIMessage } from "ai";
 import type { ChatMode, FileContent } from "@/types";

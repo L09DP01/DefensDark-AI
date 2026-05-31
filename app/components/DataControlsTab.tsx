@@ -2,9 +2,9 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useMutation } from "convex/react";
-import { ConvexError } from "convex/values";
-import { api } from "@/convex/_generated/api";
+import { useMutation } from "@/lib/supabase/hooks";
+import { ConvexError } from "@/lib/supabase/hooks";
+import { api } from "@/lib/supabase/api";
 import {
   AlertDialog,
   AlertDialogAction,

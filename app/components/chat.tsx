@@ -10,8 +10,8 @@ import {
   useCallback,
   type RefObject,
 } from "react";
-import { useQuery, usePaginatedQuery, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { useQuery, usePaginatedQuery, useMutation } from "@/lib/supabase/hooks";
+import { api } from "@/lib/supabase/api";
 import type { FileDetails } from "@/types/file";
 import { Messages } from "./Messages";
 import { ChatInput } from "./ChatInput";

@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useMutation, useQuery } from "convex/react";
-import { ConvexError } from "convex/values";
-import { api } from "@/convex/_generated/api";
+import { useMutation, useQuery } from "@/lib/supabase/hooks";
+import { ConvexError } from "@/lib/supabase/hooks";
+import { api } from "@/lib/supabase/api";
 import { toast } from "sonner";
 import {
   Dialog,

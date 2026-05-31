@@ -3,8 +3,8 @@ import { createUIMessageStream, JsonToSseTransformStream } from "ai";
 import { ChatSDKError } from "@/lib/errors";
 import type { ChatMessage } from "@/types/chat";
 import { getStreamContext } from "@/lib/api/chat-handler";
-import { ConvexHttpClient } from "convex/browser";
-import { api } from "@/convex/_generated/api";
+import { ConvexHttpClient } from "@/lib/supabase/api";
+import { api } from "@/lib/supabase/api";
 import {
   createCancellationSubscriber,
   createPreemptiveTimeout,
@@ -44,8 +44,7 @@ export async function GET(
   // Load chat and enforce ownership
   let chat: any | null = null;
   try {
-    chat = await convex.query(api.chats.getChatById, {
-      serviceKey,
+    chat = await api.chats.getChatById({
       id: chatId,
     });
   } catch {

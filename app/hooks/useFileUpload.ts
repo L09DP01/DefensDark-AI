@@ -1,8 +1,8 @@
 import { useRef, useState, useCallback } from "react";
 import { toast } from "sonner";
-import { useMutation, useAction } from "convex/react";
-import { ConvexError } from "convex/values";
-import { api } from "@/convex/_generated/api";
+import { useMutation, useAction } from "@/lib/supabase/hooks";
+import { ConvexError } from "@/lib/supabase/hooks";
+import { api } from "@/lib/supabase/api";
 import {
   getMaxFilesLimitForMode,
   MAX_IMAGE_SIZE,

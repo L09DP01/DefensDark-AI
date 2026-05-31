@@ -1,5 +1,5 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
-import { ConvexError } from "convex/values";
+import { ConvexError } from "@/lib/supabase/hooks";
 import { useFileUpload } from "../useFileUpload";
 import {
   getLocalFileMetadata,

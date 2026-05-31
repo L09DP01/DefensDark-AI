@@ -2,8 +2,8 @@
 
 import React, { useState, useCallback, useEffect } from "react";
 import { useAuth } from "@workos-inc/authkit-nextjs/components";
-import { useAction, useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { useAction, useQuery } from "@/lib/supabase/hooks";
+import { api } from "@/lib/supabase/api";
 import {
   LogOut,
   Sparkle,

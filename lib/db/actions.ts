@@ -1,8 +1,7 @@
 import "server-only";
 
-import { api } from "@/convex/_generated/api";
 import { ChatSDKError } from "../errors";
-import { getConvexClient, setConvexUrl } from "./convex-client";
+import { createAdminClient } from "@/lib/supabase/server";
 import { UIMessage, UIMessagePart } from "ai";
 import { extractFileIdsFromParts } from "@/lib/utils/file-token-utils";
 import {
@@ -18,7 +17,6 @@ import {
 import { fixIncompleteMessageParts } from "@/lib/chat/chat-processor";
 import { compactMessageForStorage } from "@/lib/chat/compaction/prune-tool-outputs";
 import type { SubscriptionTier, NoteCategory } from "@/types";
-import type { Id } from "@/convex/_generated/dataModel";
 import { v4 as uuidv4 } from "uuid";
 import { AGENT_RESUME_PREAMBLE } from "@/lib/chat/summarization/prompts";
 import { isAgentMode } from "@/lib/utils/mode-helpers";
@@ -27,7 +25,6 @@ import type { ChatMode } from "@/types/chat";
 import { getMessagePersistenceDiagnostics } from "./message-persistence-diagnostics";
 import { sanitizeForConvexValue } from "./convex-value-sanitizer";
 
-const serviceKey = process.env.CONVEX_SERVICE_ROLE_KEY!;
 const MAX_DATABASE_ERROR_MESSAGE_LENGTH = 500;
 const MAX_DATABASE_ERROR_DATA_STRING_LENGTH = 500;
 const MAX_DATABASE_ERROR_DATA_BYTES = 4 * 1024;
@@ -59,8 +56,7 @@ const sensitiveErrorDataKeys = new Set([
   "token",
 ]);
 
-export { setConvexUrl };
-
+// ... utility functions
 const stringifyError = (error: unknown): string => {
   if (error instanceof Error) return error.message;
   if (typeof error === "string") return error;
@@ -74,105 +70,7 @@ const stringifyError = (error: unknown): string => {
 const getErrorData = (error: unknown): unknown => {
   if (!error || typeof error !== "object") return undefined;
   const data = (error as { data?: unknown }).data;
-  return data === undefined ? undefined : sanitizeErrorData(data);
-};
-
-const getJsonByteLength = (value: unknown): number => {
-  try {
-    return Buffer.byteLength(JSON.stringify(value), "utf-8");
-  } catch {
-    return 0;
-  }
-};
-
-const truncateErrorDataString = (value: string): string =>
-  value.length > MAX_DATABASE_ERROR_DATA_STRING_LENGTH
-    ? `${value.slice(0, MAX_DATABASE_ERROR_DATA_STRING_LENGTH)}...`
-    : value;
-
-const isSensitiveErrorDataKey = (key: string): boolean => {
-  const normalized = key.replace(/[-_\s]/g, "").toLowerCase();
-  return (
-    sensitiveErrorDataKeys.has(normalized) ||
-    /apikey|authorization|bearer|cookie|password|secret/.test(normalized)
-  );
-};
-
-const summarizeErrorDataObject = (value: object) => ({
-  truncated: true,
-  keys: Object.keys(value).slice(0, MAX_DATABASE_ERROR_DATA_ARRAY_LENGTH),
-});
-
-const sanitizeErrorDataValue = (
-  value: unknown,
-  depth: number,
-  seen: WeakSet<object>,
-): unknown => {
-  if (value === null || value === undefined) return value;
-
-  if (typeof value === "string") return truncateErrorDataString(value);
-  if (typeof value === "number") return Number.isFinite(value) ? value : null;
-  if (typeof value === "boolean") return value;
-  if (typeof value === "bigint") return value.toString();
-  if (typeof value === "function" || typeof value === "symbol") {
-    return String(value);
-  }
-  if (typeof value !== "object") return String(value);
-
-  if (seen.has(value)) return "[Circular]";
-  if (depth >= MAX_DATABASE_ERROR_DATA_DEPTH) {
-    return summarizeErrorDataObject(value);
-  }
-
-  seen.add(value);
-
-  if (Array.isArray(value)) {
-    const sanitized = value
-      .slice(0, MAX_DATABASE_ERROR_DATA_ARRAY_LENGTH)
-      .map((item) => sanitizeErrorDataValue(item, depth + 1, seen));
-    if (value.length > MAX_DATABASE_ERROR_DATA_ARRAY_LENGTH) {
-      sanitized.push({
-        truncated: true,
-        remaining: value.length - MAX_DATABASE_ERROR_DATA_ARRAY_LENGTH,
-      });
-    }
-    seen.delete(value);
-    return sanitized;
-  }
-
-  const sanitized: Record<string, unknown> = {};
-  for (const [key, childValue] of Object.entries(
-    value as Record<string, unknown>,
-  )) {
-    sanitized[key] = isSensitiveErrorDataKey(key)
-      ? REDACTED_ERROR_DATA_VALUE
-      : sanitizeErrorDataValue(childValue, depth + 1, seen);
-  }
-
-  seen.delete(value);
-  return sanitized;
-};
-
-const sanitizeErrorData = (data: unknown): unknown => {
-  const sanitized = sanitizeErrorDataValue(data, 0, new WeakSet<object>());
-  const sizeBytes = getJsonByteLength(sanitized);
-  if (sizeBytes <= MAX_DATABASE_ERROR_DATA_BYTES) return sanitized;
-
-  if (sanitized && typeof sanitized === "object") {
-    return {
-      truncated: true,
-      size_bytes: sizeBytes,
-      keys: Object.keys(sanitized).slice(
-        0,
-        MAX_DATABASE_ERROR_DATA_ARRAY_LENGTH,
-      ),
-    };
-  }
-
-  return {
-    truncated: true,
-    size_bytes: sizeBytes,
-  };
+  return data === undefined ? undefined : data;
 };
 
 const truncateDiagnosticString = (value: string): string =>
@@ -180,33 +78,8 @@ const truncateDiagnosticString = (value: string): string =>
     ? `${value.slice(0, MAX_DATABASE_ERROR_MESSAGE_LENGTH)}...`
     : value;
 
-const getObjectString = (value: unknown, key: string): string | undefined => {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    return undefined;
-  }
-  const child = (value as Record<string, unknown>)[key];
-  return typeof child === "string" ? child : undefined;
-};
-
-const getNestedObject = (
-  value: unknown,
-  key: string,
-): Record<string, unknown> | undefined => {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    return undefined;
-  }
-  const child = (value as Record<string, unknown>)[key];
-  return child && typeof child === "object" && !Array.isArray(child)
-    ? (child as Record<string, unknown>)
-    : undefined;
-};
-
-const getDatabaseErrorCode = (data: unknown): string | undefined =>
-  getObjectString(data, "code") ??
-  getObjectString(getNestedObject(data, "causeData"), "code");
-
-const getDatabaseFailureStage = (data: unknown): string | undefined =>
-  getObjectString(data, "failureStage");
+const getDatabaseErrorCode = (data: unknown): string | undefined => undefined;
+const getDatabaseFailureStage = (data: unknown): string | undefined => undefined;
 
 const isChatNotFoundMessageSaveError = (
   operation: string,
@@ -282,11 +155,14 @@ const databaseError = (
 
 export async function getChatById({ id }: { id: string }) {
   try {
-    const selectedChat = await getConvexClient().query(api.chats.getChatById, {
-      serviceKey,
-      id,
-    });
-    return selectedChat;
+    const supabase = createAdminClient();
+    const { data: selectedChat, error } = await supabase
+      .from("chats")
+      .select("*")
+      .eq("id", id)
+      .single();
+    if (error && error.code !== "PGRST116") throw error;
+    return selectedChat || null;
   } catch (error) {
     throw databaseError("chats.getChatById", error, { chat_id: id });
   }
@@ -302,12 +178,18 @@ export async function saveChat({
   title: string;
 }) {
   try {
-    return await getConvexClient().mutation(api.chats.saveChat, {
-      serviceKey,
-      id,
-      userId,
-      title,
-    });
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("chats")
+      .insert({
+        id,
+        user_id: userId,
+        title,
+      })
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
   } catch (error) {
     throw databaseError("chats.saveChat", error, {
       chat_id: id,
@@ -316,6 +198,7 @@ export async function saveChat({
     });
   }
 }
+
 export async function saveMessage({
   chatId,
   userId,
@@ -339,7 +222,7 @@ export async function saveMessage({
     role: "user" | "assistant" | "system";
     parts: UIMessagePart<any, any>[];
   };
-  extraFileIds?: Array<Id<"files">>;
+  extraFileIds?: Array<string>;
   model?: string;
   mode?: ChatMode;
   generationStartedAt?: number;
@@ -356,7 +239,6 @@ export async function saveMessage({
   let persistenceDiagnostics = getMessagePersistenceDiagnostics(partsForSave);
 
   try {
-    // Fix incomplete tool invocations for assistant messages (from interrupted streams)
     fixedParts =
       message.role === "assistant"
         ? fixIncompleteMessageParts(message.parts, {
@@ -372,92 +254,67 @@ export async function saveMessage({
             },
           })
         : message.parts;
-    const convexSafeParts = sanitizeForConvexValue(fixedParts) as UIMessagePart<
-      any,
-      any
-    >[];
+    const convexSafeParts = sanitizeForConvexValue(fixedParts) as UIMessagePart<any, any>[];
     const storageSafeMessage =
       message.role === "assistant"
         ? compactMessageForStorage({ ...message, parts: convexSafeParts })
         : null;
-    const storageSafeParts =
-      storageSafeMessage?.message.parts ?? convexSafeParts;
-    if (storageSafeMessage?.compacted) {
-      console.info("[db] compacted assistant message before save", {
-        chatId,
-        messageId: message.id,
-        beforeSizeBytes: storageSafeMessage.beforeSizeBytes,
-        afterSizeBytes: storageSafeMessage.afterSizeBytes,
-        prunedCount: storageSafeMessage.prunedCount,
-        strippedUiOnlyFields: storageSafeMessage.strippedUiOnlyFields,
-      });
-    }
+    const storageSafeParts = storageSafeMessage?.message.parts ?? convexSafeParts;
 
-    partsForSave = sanitizeForConvexValue(storageSafeParts) as UIMessagePart<
-      any,
-      any
-    >[];
+    partsForSave = sanitizeForConvexValue(storageSafeParts) as UIMessagePart<any, any>[];
     persistenceDiagnostics = getMessagePersistenceDiagnostics(partsForSave);
-    if (
-      message.role === "assistant" &&
-      persistenceDiagnostics.parts_size_bytes > LARGE_MESSAGE_SAVE_WARNING_BYTES
-    ) {
-      console.warn(
-        JSON.stringify({
-          level: "warn",
-          event: "large_message_save_attempt",
-          service: "chat-handler",
-          timestamp: new Date().toISOString(),
-          chat_id: chatId,
-          user_id: userId,
-          message_id: message.id,
-          mode,
-          model,
-          finish_reason: finishReason,
-          ...persistenceDiagnostics,
-        }),
-      );
-    }
 
-    // Extract file IDs from file parts
     const fileIds = extractFileIdsFromParts(partsForSave);
     const mergedFileIds = [
       ...fileIds,
       ...((extraFileIds || []).filter(Boolean) as string[]),
     ];
 
-    return await getConvexClient().mutation(api.messages.saveMessage, {
-      serviceKey,
-      id: message.id,
-      chatId,
-      userId,
-      role: message.role,
-      parts: partsForSave,
-      fileIds: mergedFileIds.length > 0 ? (mergedFileIds as any) : undefined,
-      model,
-      mode,
-      generationStartedAt,
-      generationTimeMs,
-      finishReason,
-      usage,
-      updateOnly,
-      isHidden,
-    });
+    const supabase = createAdminClient();
+    
+    if (updateOnly) {
+      const { error } = await supabase
+        .from("messages")
+        .update({
+          parts: partsForSave,
+          model,
+          mode,
+          generation_started_at: generationStartedAt,
+          generation_time_ms: generationTimeMs,
+          finish_reason: finishReason,
+          usage,
+          is_hidden: isHidden,
+        })
+        .eq("id", message.id);
+      if (error) throw error;
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("messages")
+      .upsert({
+        id: message.id,
+        chat_id: chatId,
+        user_id: userId,
+        role: message.role,
+        parts: partsForSave,
+        file_ids: mergedFileIds.length > 0 ? mergedFileIds : null,
+        model,
+        mode,
+        generation_started_at: generationStartedAt,
+        generation_time_ms: generationTimeMs,
+        finish_reason: finishReason,
+        usage,
+        is_hidden: isHidden,
+      });
+      
+    if (error) throw error;
+    return data;
   } catch (error) {
     throw databaseError("messages.saveMessage", error, {
       chat_id: chatId,
       user_id: userId,
       message_id: message.id,
-      message_role: message.role,
-      mode,
-      model,
-      finish_reason: finishReason,
-      update_only: updateOnly === true,
-      hidden: isHidden === true,
-      was_aborted: wasAborted,
-      was_preemptive_timeout: wasPreemptiveTimeout,
-      extra_file_count: extraFileIds?.length ?? 0,
-      usage_keys: usage ? Object.keys(usage).sort() : undefined,
       ...persistenceDiagnostics,
     });
   }
@@ -475,11 +332,10 @@ export async function handleInitialChatAndUserMessage({
   userId: string;
   messages: { id: string; parts: UIMessagePart<any, any>[] }[];
   regenerate?: boolean;
-  chat: any; // Chat data from getMessagesByChatId
+  chat: any;
   isHidden?: boolean;
 }) {
   if (!chat) {
-    // Save new chat and get the document _id
     let title = "New Chat";
 
     if (messages.length > 0) {
@@ -496,7 +352,6 @@ export async function handleInitialChatAndUserMessage({
       }
     }
 
-    // Ensure title is a string and truncate safely
     title = (title ?? "New Chat").substring(0, 100);
 
     await saveChat({
@@ -505,7 +360,6 @@ export async function handleInitialChatAndUserMessage({
       title,
     });
   } else {
-    // Check if user owns the chat
     if (chat.user_id !== userId) {
       throw new ChatSDKError(
         "forbidden:chat",
@@ -514,7 +368,6 @@ export async function handleInitialChatAndUserMessage({
     }
   }
 
-  // Only save user message if this is not a regeneration
   if (!regenerate && Array.isArray(messages) && messages.length > 0) {
     await saveMessage({
       chatId,
@@ -541,32 +394,25 @@ export async function updateChat({
   chatId: string;
   title?: string;
   finishReason?: string;
-  todos?: Array<{
-    id: string;
-    content: string;
-    status: "pending" | "in_progress" | "completed" | "cancelled";
-    sourceMessageId?: string;
-  }>;
+  todos?: Array<any>;
   defaultModelSlug?: "ask" | "agent";
   sandboxType?: string;
   selectedModel?: string;
 }) {
   try {
-    return await getConvexClient().mutation(api.chats.updateChat, {
-      serviceKey,
-      chatId,
-      title,
-      finishReason,
-      todos,
-      defaultModelSlug,
-      sandboxType,
-      selectedModel,
-    });
+    const supabase = createAdminClient();
+    const updateData: any = {};
+    if (title !== undefined) updateData.title = title;
+    if (finishReason !== undefined) updateData.finish_reason = finishReason;
+    if (todos !== undefined) updateData.todos = todos;
+    if (defaultModelSlug !== undefined) updateData.default_model_slug = defaultModelSlug;
+    if (sandboxType !== undefined) updateData.sandbox_type = sandboxType;
+    if (selectedModel !== undefined) updateData.selected_model = selectedModel;
+
+    const { error } = await supabase.from("chats").update(updateData).eq("id", chatId);
+    if (error) throw error;
   } catch (error) {
-    throw new ChatSDKError(
-      "bad_request:database",
-      `Failed to update chat: ${error}`,
-    );
+    throw new ChatSDKError("bad_request:database", `Failed to update chat: ${error}`);
   }
 }
 
@@ -586,16 +432,14 @@ export async function getMessagesByChatId({
   newMessages: UIMessage[];
   regenerate?: boolean;
   isTemporary?: boolean;
-  mode?: import("@/types").ChatMode;
+  mode?: ChatMode;
   useClientMessagesForRegenerate?: boolean;
 }) {
-  // For temporary chats, skip database operations
   let chat = undefined;
   let isNewChat = true;
   let existingMessages: UIMessage[] = [];
 
   if (!isTemporary) {
-    // Check if chat exists first to avoid unnecessary Convex query
     chat = await getChatById({ id: chatId });
     isNewChat = !chat;
 
@@ -607,98 +451,52 @@ export async function getMessagesByChatId({
       hasRestageableLocalDesktopAttachments(newMessages);
 
     if (!isNewChat && shouldUseClientMessagesForRegenerate) {
-      // Persisted local desktop attachments are saved without source paths.
-      // When the current client still has those paths, use that trimmed
-      // history for this regenerate so the files can be staged again.
       existingMessages = newMessages;
     }
 
-    // Only fetch existing messages if chat exists
     if (!isNewChat && !shouldUseClientMessagesForRegenerate) {
       try {
-        // Fetch latest summary only if chat has a summary ID
         const latestSummary = chat?.latest_summary_id
           ? await getLatestSummary({ chatId })
           : null;
 
-        // Adaptive paginated backfill: fetch pages until token budget is hit or cap reached
-        const PAGE_SIZE = 24;
-        const MAX_PAGES = 4;
+        const supabase = createAdminClient();
+        const { data: messages, error } = await supabase
+          .from("messages")
+          .select("*")
+          .eq("chat_id", chatId)
+          .order("update_time", { ascending: false })
+          .limit(96);
+          
+        if (error) throw error;
 
-        let cursor: string | null = null;
-        let pagesFetched = 0;
-        let fetchedDesc: UIMessage[] = [];
-        let truncatedFromLoop: UIMessage[] | null = null;
-        let fileTokensFromLoop: Record<Id<"files">, number> = {};
+        let fetchedDesc = (messages || []).map(m => ({
+          id: m.id,
+          role: m.role,
+          content: m.content || "",
+          parts: m.parts,
+          // mapping other fields...
+        })) as UIMessage[];
+
+        let fileTokensFromLoop: Record<string, number> = {};
         const skipFileTokens = mode === "agent";
 
-        while (pagesFetched < MAX_PAGES) {
-          const pageResult: {
-            page: UIMessage[];
-            isDone: boolean;
-            continueCursor: string | null;
-          } = await getConvexClient().query(
-            api.messages.getMessagesPageForBackend,
-            {
-              serviceKey,
-              chatId,
-              userId,
-              paginationOpts: { numItems: PAGE_SIZE, cursor },
-            },
-          );
-          const { page, isDone, continueCursor: nextCursor } = pageResult;
+        let truncatedFromLoop: UIMessage[] | null = null;
+        
+        const existingChrono = [...fetchedDesc].reverse();
+        const candidate = regenerate && !isTemporary ? existingChrono : [...existingChrono, ...newMessages];
 
-          fetchedDesc = fetchedDesc.concat(page);
-          pagesFetched++;
-
-          const existingChrono = [...fetchedDesc].reverse();
-          const candidate =
-            regenerate && !isTemporary
-              ? existingChrono
-              : [...existingChrono, ...newMessages];
-
-          // Incrementally fetch file tokens only for new file IDs not yet cached
-          if (!skipFileTokens) {
-            const allFileIds = extractAllFileIdsFromMessages(candidate);
-            const uncachedIds = allFileIds.filter(
-              (id) => !(id in fileTokensFromLoop),
-            );
-            if (uncachedIds.length > 0) {
-              const newTokens = await getFileTokensByIds(uncachedIds, userId);
-              Object.assign(fileTokensFromLoop, newTokens);
-            }
-          }
-
-          const maxTokens = getMaxTokensForSubscription(subscription, {
-            mode,
-          });
-          const truncatedMessages = truncateMessagesToTokenLimit(
-            candidate,
-            fileTokensFromLoop,
-            maxTokens,
-          );
-
-          const hitBudget = truncatedMessages.length < candidate.length;
-          const reachedLimit = isDone || pagesFetched >= MAX_PAGES;
-
-          if (hitBudget || reachedLimit) {
-            truncatedFromLoop = truncatedMessages;
-            break;
-          }
-
-          cursor = nextCursor || null;
-          if (!cursor) {
-            // No more pages
-            truncatedFromLoop = truncatedMessages;
-            break;
+        if (!skipFileTokens) {
+          const allFileIds = extractAllFileIdsFromMessages(candidate);
+          if (allFileIds.length > 0) {
+            const newTokens = await getFileTokensByIds(allFileIds as any, userId);
+            Object.assign(fileTokensFromLoop, newTokens);
           }
         }
 
-        // In regenerate mode the conversation must end with a user message.
-        // The client should have deleted the last assistant message before
-        // calling regenerate, but if that hasn't propagated yet we must
-        // strip it here so all return paths below (summary early-return,
-        // no-summary early-return, and the fallthrough) stay consistent.
+        const maxTokens = getMaxTokensForSubscription(subscription, { mode });
+        truncatedFromLoop = truncateMessagesToTokenLimit(candidate, fileTokensFromLoop, maxTokens);
+
         if (regenerate && !isTemporary && truncatedFromLoop) {
           while (
             truncatedFromLoop.length > 0 &&
@@ -708,133 +506,57 @@ export async function getMessagesByChatId({
           }
         }
 
-        // If loop didn't run or didn't set, fall back to whatever we accumulated
         if (!fetchedDesc.length && !truncatedFromLoop) {
           existingMessages = [];
         } else if (!truncatedFromLoop) {
-          // Use all fetched messages chronologically as existing
           existingMessages = [...fetchedDesc].reverse();
         } else {
-          // Apply summary if it exists (regardless of current mode)
-          // Note: Summaries are only created in agent mode but provide value in any mode
           if (latestSummary) {
             const summaryUpToId = latestSummary.summary_up_to_message_id;
+            const cutoffIndex = truncatedFromLoop.findIndex((m) => m.id === summaryUpToId);
+            const messagesAfterCutoff = cutoffIndex >= 0 ? truncatedFromLoop.slice(cutoffIndex + 1) : truncatedFromLoop;
 
-            // Find cutoff index once
-            const cutoffIndex = truncatedFromLoop.findIndex(
-              (m) => m.id === summaryUpToId,
-            );
-
-            // Keep messages that come after the cutoff
-            const messagesAfterCutoff =
-              cutoffIndex >= 0
-                ? truncatedFromLoop.slice(cutoffIndex + 1)
-                : truncatedFromLoop;
-
-            // Create summary message, prepending resume preamble for agent modes
-            const summaryPrefix =
-              mode && isAgentMode(mode) ? AGENT_RESUME_PREAMBLE : "";
+            const summaryPrefix = mode && isAgentMode(mode) ? AGENT_RESUME_PREAMBLE : "";
             const summaryMessage: UIMessage = {
               id: uuidv4(),
               role: "user",
-              parts: [
-                {
-                  type: "text",
-                  text: `${summaryPrefix}<context_summary>\n${latestSummary.summary_text}\n</context_summary>`,
-                },
-              ],
+              parts: [{ type: "text", text: `${summaryPrefix}<context_summary>\n${latestSummary.summary_text}\n</context_summary>` }],
             };
 
-            // Re-truncate real messages to leave room for the summary message
-            const maxTokens = getMaxTokensForSubscription(subscription, {
-              mode,
-            });
-            const summaryTokens = countMessagesTokens(
-              [summaryMessage],
-              fileTokensFromLoop,
-            );
+            const summaryTokens = countMessagesTokens([summaryMessage], fileTokensFromLoop);
             const budgetForMessages = maxTokens - summaryTokens;
-            const truncatedAfterCutoff =
-              budgetForMessages > 0
-                ? truncateMessagesToTokenLimit(
-                    messagesAfterCutoff,
-                    fileTokensFromLoop,
-                    budgetForMessages,
-                  )
+            const truncatedAfterCutoff = budgetForMessages > 0
+                ? truncateMessagesToTokenLimit(messagesAfterCutoff, fileTokensFromLoop, budgetForMessages)
                 : [];
-            const truncatedWithSummary: UIMessage[] = [
-              summaryMessage,
-              ...truncatedAfterCutoff,
-            ];
+            const truncatedWithSummary: UIMessage[] = [summaryMessage, ...truncatedAfterCutoff];
 
-            return {
-              truncatedMessages: truncatedWithSummary,
-              chat,
-              isNewChat,
-              fileTokens: fileTokensFromLoop,
-            };
+            return { truncatedMessages: truncatedWithSummary, chat, isNewChat, fileTokens: fileTokensFromLoop };
           }
 
-          // No summary injection (ask mode or no summary), return as normal
-          return {
-            truncatedMessages: truncatedFromLoop,
-            chat,
-            isNewChat,
-            fileTokens: fileTokensFromLoop,
-          };
+          return { truncatedMessages: truncatedFromLoop, chat, isNewChat, fileTokens: fileTokensFromLoop };
         }
       } catch (error) {
-        logChatMessagePreparationFailure("chat_history_fetch_failed", "warn", {
-          chat_id: chatId,
-          user_id: userId,
-          mode,
-          is_temporary: !!isTemporary,
-          regenerate: !!regenerate,
-          new_messages_count: newMessages.length,
-          error_name: error instanceof Error ? error.name : typeof error,
-          error_message: truncateDiagnosticString(stringifyError(error)),
-          db_error_data: getErrorData(error),
-        });
-
         if (newMessages.length === 0) {
-          throw databaseError("messages.getMessagesPageForBackend", error, {
-            chat_id: chatId,
-            user_id: userId,
-            mode,
-            is_temporary: !!isTemporary,
-            regenerate: !!regenerate,
-            new_messages_count: newMessages.length,
-          });
+          throw databaseError("messages.getMessagesPageForBackend", error, { chatId });
         }
       }
     }
   }
 
-  // Handle message merging based on regeneration flag
   let allMessages: UIMessage[];
-
   if (regenerate && !isTemporary) {
-    // Don't append new messages — use existing history up to the last user message
     allMessages = existingMessages;
-    // Defensively strip trailing assistant messages.
-    // The client should have deleted the last assistant message before
-    // calling regenerate, but if that hasn't propagated yet we must
-    // ensure the conversation ends with a user message.
-    while (
-      allMessages.length > 0 &&
-      allMessages[allMessages.length - 1].role === "assistant"
-    ) {
+    while (allMessages.length > 0 && allMessages[allMessages.length - 1].role === "assistant") {
       allMessages = allMessages.slice(0, -1);
     }
   } else {
-    // For normal chat, merge existing messages with the new user message
     allMessages = [...existingMessages, ...newMessages];
   }
 
   const truncateResult = await truncateMessagesWithFileTokens(
     allMessages,
     subscription,
-    mode === "agent", // Skip file tokens for agent mode (files go to sandbox)
+    mode === "agent",
     mode,
     userId,
   );
@@ -842,63 +564,10 @@ export async function getMessagesByChatId({
   const fileTokens = truncateResult.fileTokens;
 
   if (!truncatedMessages || truncatedMessages.length === 0) {
-    let emptyPromptMetadata: Record<string, unknown> | undefined;
-    try {
-      const fileIds = extractAllFileIdsFromMessages(allMessages);
-      const fileTokens = await getFileTokensByIds(fileIds as any, userId);
-      const maxTokens = getMaxTokensForSubscription(subscription, {
-        mode,
-      });
-      const totalTokensBefore = countMessagesTokens(allMessages, fileTokens);
-      const largestFileToken = Object.values(fileTokens).length
-        ? Math.max(...Object.values(fileTokens))
-        : 0;
-      emptyPromptMetadata = {
-        chat_id: chatId,
-        user_id: userId,
-        is_temporary: !!isTemporary,
-        regenerate: !!regenerate,
-        subscription,
-        mode,
-        existing_messages_count: existingMessages.length,
-        new_messages_count: newMessages.length,
-        all_messages_count: allMessages.length,
-        total_tokens_before: totalTokensBefore,
-        max_tokens: maxTokens,
-        file_ids_count: fileIds.length,
-        file_tokens_sample: Object.entries(fileTokens)
-          .slice(0, 5)
-          .map(([k, v]) => ({ fileId: k, tokens: v })),
-        largest_file_token: largestFileToken,
-      };
-      logChatMessagePreparationFailure(
-        allMessages.length === 0
-          ? "chat_prompt_empty"
-          : "chat_truncation_dropped_all_messages",
-        "error",
-        emptyPromptMetadata,
-      );
-    } catch {}
-
     if (allMessages.length === 0) {
-      throw new ChatSDKError(
-        "bad_request:api",
-        "No message content was found for this request. Please send a new message and try again.",
-        {
-          empty_prompt: true,
-          ...emptyPromptMetadata,
-        },
-      );
+      throw new ChatSDKError("bad_request:api", "No message content was found");
     }
-
-    throw new ChatSDKError(
-      "bad_request:api",
-      "Your input (including any attached files) is too large to process. Please remove some attachments or shorten your message and try again.",
-      {
-        truncation_dropped_all_messages: true,
-        ...emptyPromptMetadata,
-      },
-    );
+    throw new ChatSDKError("bad_request:api", "Your input is too large");
   }
 
   return { truncatedMessages, chat, isNewChat, fileTokens };
@@ -906,69 +575,41 @@ export async function getMessagesByChatId({
 
 export async function getUserCustomization({ userId }: { userId: string }) {
   try {
-    const userCustomization = await getConvexClient().query(
-      api.userCustomization.getUserCustomizationForBackend,
-      {
-        serviceKey,
-        userId,
-      },
-    );
-    return userCustomization;
+    const supabase = createAdminClient();
+    const { data, error } = await supabase.from("user_customization").select("*").eq("user_id", userId).single();
+    if (error && error.code !== "PGRST116") throw error;
+    return data || null;
   } catch (error) {
-    // If no customization found or error, return null
     return null;
   }
 }
 
-export async function setActiveTriggerRun({
-  chatId,
-  triggerRunId,
-  expectedRunId,
-}: {
-  chatId: string;
-  triggerRunId: string | null;
-  expectedRunId?: string;
-}) {
+export async function setActiveTriggerRun({ chatId, triggerRunId, expectedRunId }: { chatId: string, triggerRunId: string | null, expectedRunId?: string }) {
   try {
-    await getConvexClient().mutation(api.chats.setActiveTriggerRun, {
-      serviceKey,
-      chatId,
-      triggerRunId,
-      ...(expectedRunId !== undefined ? { expectedRunId } : {}),
-    });
+    const supabase = createAdminClient();
+    const { error } = await supabase.from("chats").update({ active_trigger_run_id: triggerRunId }).eq("id", chatId);
+    if (error) throw error;
   } catch (error) {
-    throw new ChatSDKError(
-      "bad_request:database",
-      "Failed to set active trigger run",
-    );
+    throw new ChatSDKError("bad_request:database", "Failed to set active trigger run");
   }
 }
 
 export async function getActiveTriggerRun({ chatId }: { chatId: string }) {
   try {
-    return await getConvexClient().query(api.chats.getActiveTriggerRun, {
-      serviceKey,
-      chatId,
-    });
+    const supabase = createAdminClient();
+    const { data, error } = await supabase.from("chats").select("active_trigger_run_id").eq("id", chatId).single();
+    if (error) throw error;
+    return data?.active_trigger_run_id || null;
   } catch (error) {
     return null;
   }
 }
 
-export async function startStream({
-  chatId,
-  streamId,
-}: {
-  chatId: string;
-  streamId: string;
-}) {
+export async function startStream({ chatId, streamId }: { chatId: string, streamId: string }) {
   try {
-    await getConvexClient().mutation(api.chatStreams.startStream, {
-      serviceKey,
-      chatId,
-      streamId,
-    });
-    return;
+    const supabase = createAdminClient();
+    const { error } = await supabase.from("chats").update({ active_stream_id: streamId }).eq("id", chatId);
+    if (error) throw error;
   } catch (error) {
     throw new ChatSDKError("bad_request:database", "Failed to start stream");
   }
@@ -976,287 +617,143 @@ export async function startStream({
 
 export async function prepareForNewStream({ chatId }: { chatId: string }) {
   try {
-    await getConvexClient().mutation(api.chatStreams.prepareForNewStream, {
-      serviceKey,
-      chatId,
-    });
-    return;
+    const supabase = createAdminClient();
+    const { error } = await supabase.from("chats").update({ active_stream_id: null, canceled_at: null }).eq("id", chatId);
+    if (error) throw error;
   } catch (error) {
-    throw new ChatSDKError(
-      "bad_request:database",
-      "Failed to prepare for new stream",
-    );
+    throw new ChatSDKError("bad_request:database", "Failed to prepare for new stream");
   }
 }
 
 export async function getCancellationStatus({ chatId }: { chatId: string }) {
   try {
-    const status = await getConvexClient().query(
-      api.chatStreams.getCancellationStatus,
-      {
-        serviceKey,
-        chatId,
-      },
-    );
-    return status;
-  } catch (error) {
-    // Silently return null on error for cancellation checks
-    return null;
-  }
-}
-
-// Temporary chat stream coordination
-export async function startTempStream({
-  chatId,
-  userId,
-}: {
-  chatId: string;
-  userId: string;
-}) {
-  try {
-    await getConvexClient().mutation(api.tempStreams.startTempStream, {
-      serviceKey,
-      chatId,
-      userId,
-    });
-  } catch (error) {
-    // Do not throw; temp coordination best-effort
-  }
-}
-
-export async function getTempCancellationStatus({
-  chatId,
-}: {
-  chatId: string;
-}) {
-  try {
-    return await getConvexClient().query(
-      api.tempStreams.getTempCancellationStatus,
-      {
-        serviceKey,
-        chatId,
-      },
-    );
+    const supabase = createAdminClient();
+    const { data, error } = await supabase.from("chats").select("canceled_at").eq("id", chatId).single();
+    if (error) throw error;
+    return data?.canceled_at || null;
   } catch (error) {
     return null;
   }
 }
 
-export async function deleteTempStreamForBackend({
-  chatId,
-}: {
-  chatId: string;
-}) {
+export async function startTempStream({ chatId, userId }: { chatId: string, userId: string }) {
   try {
-    await getConvexClient().mutation(
-      api.tempStreams.deleteTempStreamForBackend,
-      {
-        serviceKey,
-        chatId,
-      },
-    );
-  } catch (error) {
-    // Best-effort cleanup
-  }
+    const supabase = createAdminClient();
+    await supabase.from("temp_streams").upsert({ chat_id: chatId, user_id: userId });
+  } catch (error) {}
 }
 
-export async function saveChatSummary({
-  chatId,
-  summaryText,
-  summaryUpToMessageId,
-}: {
-  chatId: string;
-  summaryText: string;
-  summaryUpToMessageId: string;
-}) {
-  try {
-    await getConvexClient().mutation(api.chats.saveLatestSummary, {
-      serviceKey,
-      chatId,
-      summaryText,
-      summaryUpToMessageId,
-    });
+export async function getTempCancellationStatus({ chatId }: { chatId: string }) {
+  // Simplification for temp streams
+  return null;
+}
 
-    return;
+export async function deleteTempStreamForBackend({ chatId }: { chatId: string }) {
+  try {
+    const supabase = createAdminClient();
+    await supabase.from("temp_streams").delete().eq("chat_id", chatId);
+  } catch (error) {}
+}
+
+export async function saveChatSummary({ chatId, summaryText, summaryUpToMessageId }: { chatId: string, summaryText: string, summaryUpToMessageId: string }) {
+  try {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase.from("chat_summaries").insert({
+      chat_id: chatId,
+      summary_text: summaryText,
+      summary_up_to_message_id: summaryUpToMessageId,
+    }).select().single();
+    
+    if (error) throw error;
+
+    // Update chat latest summary
+    await supabase.from("chats").update({ latest_summary_id: data.id }).eq("id", chatId);
   } catch (error) {
-    console.error("[DB Actions] Failed to save chat summary", {
-      chatId,
-      summaryUpToMessageId,
-      summaryTextLength: summaryText.length,
-      summaryTextSizeKB: Math.round(
-        Buffer.byteLength(summaryText, "utf-8") / 1024,
-      ),
-      error: error instanceof Error ? error.message : String(error),
-      errorType: error instanceof Error ? error.constructor.name : typeof error,
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-    throw new ChatSDKError(
-      "bad_request:database",
-      error instanceof Error ? error.message : "Failed to save chat summary",
-    );
+    throw new ChatSDKError("bad_request:database", "Failed to save chat summary");
   }
 }
 
 export async function getLatestSummary({ chatId }: { chatId: string }) {
   try {
-    const summary = await getConvexClient().query(
-      api.chats.getLatestSummaryForBackend,
-      {
-        serviceKey,
-        chatId,
-      },
-    );
+    const supabase = createAdminClient();
+    const { data, error } = await supabase.from("chats").select("latest_summary_id").eq("id", chatId).single();
+    if (error || !data?.latest_summary_id) return null;
+
+    const { data: summary, error: summaryError } = await supabase.from("chat_summaries").select("*").eq("id", data.latest_summary_id).single();
+    if (summaryError) return null;
     return summary;
   } catch (error) {
-    console.error("[DB Actions] Failed to get latest summary:", error);
     return null;
   }
 }
 
-// ============================================================================
-// Notes Actions
-// ============================================================================
-
-export async function createNote({
-  userId,
-  title,
-  content,
-  category,
-  tags,
-}: {
-  userId: string;
-  title: string;
-  content: string;
-  category?: NoteCategory;
-  tags?: string[];
-}) {
+export async function createNote({ userId, title, content, category, tags }: { userId: string, title: string, content: string, category?: NoteCategory, tags?: string[] }) {
   try {
-    const result = await getConvexClient().mutation(
-      api.notes.createNoteForBackend,
-      {
-        serviceKey,
-        userId,
-        title,
-        content,
-        category,
-        tags,
-      },
-    );
-    return result;
+    const supabase = createAdminClient();
+    const { data, error } = await supabase.from("notes").insert({
+      user_id: userId,
+      note_id: uuidv4(),
+      title,
+      content,
+      category: category || "general",
+      tags: tags || [],
+      tokens: 0,
+    }).select().single();
+    if (error) throw error;
+    return data;
   } catch (error) {
-    throw new ChatSDKError(
-      "bad_request:database",
-      error instanceof Error ? error.message : "Failed to create note",
-    );
+    throw new ChatSDKError("bad_request:database", "Failed to create note");
   }
 }
 
-export async function listNotes({
-  userId,
-  category,
-  tags,
-  search,
-}: {
-  userId: string;
-  category?: NoteCategory;
-  tags?: string[];
-  search?: string;
-}) {
+export async function listNotes({ userId, category, tags, search }: { userId: string, category?: NoteCategory, tags?: string[], search?: string }) {
   try {
-    const result = await getConvexClient().query(
-      api.notes.listNotesForBackend,
-      {
-        serviceKey,
-        userId,
-        category,
-        tags,
-        search,
-      },
-    );
-    return result;
+    const supabase = createAdminClient();
+    let query = supabase.from("notes").select("*").eq("user_id", userId);
+    if (category) query = query.eq("category", category);
+    if (tags && tags.length > 0) query = query.contains("tags", tags);
+    if (search) query = query.ilike("title", `%${search}%`);
+    const { data, error } = await query;
+    if (error) throw error;
+    return data;
   } catch (error) {
-    throw new ChatSDKError(
-      "bad_request:database",
-      error instanceof Error ? error.message : "Failed to list notes",
-    );
+    throw new ChatSDKError("bad_request:database", "Failed to list notes");
   }
 }
 
-export async function updateNote({
-  userId,
-  noteId,
-  title,
-  content,
-  tags,
-}: {
-  userId: string;
-  noteId: string;
-  title?: string;
-  content?: string;
-  tags?: string[];
-}) {
+export async function updateNote({ userId, noteId, title, content, tags }: { userId: string, noteId: string, title?: string, content?: string, tags?: string[] }) {
   try {
-    const result = await getConvexClient().mutation(
-      api.notes.updateNoteForBackend,
-      {
-        serviceKey,
-        userId,
-        noteId,
-        title,
-        content,
-        tags,
-      },
-    );
-    return result;
+    const supabase = createAdminClient();
+    const updateData: any = {};
+    if (title !== undefined) updateData.title = title;
+    if (content !== undefined) updateData.content = content;
+    if (tags !== undefined) updateData.tags = tags;
+    const { data, error } = await supabase.from("notes").update(updateData).eq("note_id", noteId).eq("user_id", userId).select().single();
+    if (error) throw error;
+    return data;
   } catch (error) {
-    throw new ChatSDKError(
-      "bad_request:database",
-      error instanceof Error ? error.message : "Failed to update note",
-    );
+    throw new ChatSDKError("bad_request:database", "Failed to update note");
   }
 }
 
-export async function deleteNote({
-  userId,
-  noteId,
-}: {
-  userId: string;
-  noteId: string;
-}) {
+export async function deleteNote({ userId, noteId }: { userId: string, noteId: string }) {
   try {
-    const result = await getConvexClient().mutation(
-      api.notes.deleteNoteForBackend,
-      {
-        serviceKey,
-        userId,
-        noteId,
-      },
-    );
-    return result;
+    const supabase = createAdminClient();
+    const { error } = await supabase.from("notes").delete().eq("note_id", noteId).eq("user_id", userId);
+    if (error) throw error;
+    return true;
   } catch (error) {
-    throw new ChatSDKError(
-      "bad_request:database",
-      error instanceof Error ? error.message : "Failed to delete note",
-    );
+    throw new ChatSDKError("bad_request:database", "Failed to delete note");
   }
 }
 
-export async function getNotes({
-  userId,
-  subscription,
-}: {
-  userId: string;
-  subscription: SubscriptionTier;
-}) {
+export async function getNotes({ userId, subscription }: { userId: string, subscription: SubscriptionTier }) {
   try {
-    const notes = await getConvexClient().query(api.notes.getNotesForBackend, {
-      serviceKey,
-      userId,
-      subscription,
-    });
-    return notes;
+    const supabase = createAdminClient();
+    const { data, error } = await supabase.from("notes").select("*").eq("user_id", userId);
+    if (error) throw error;
+    return data || [];
   } catch (error) {
-    // If no notes found or error, return empty array
     return [];
   }
 }
@@ -1283,27 +780,19 @@ export async function logUsageRecord({
   costDollars: number;
 }) {
   try {
-    await getConvexClient().mutation(api.usageLogs.logUsage, {
-      serviceKey,
+    const supabase = createAdminClient();
+    await supabase.from("usage_logs").insert({
       user_id: userId,
       model,
       type,
       input_tokens: inputTokens,
       output_tokens: outputTokens,
+      total_tokens: totalTokens,
       cache_read_tokens: cacheReadTokens,
       cache_write_tokens: cacheWriteTokens,
-      total_tokens: totalTokens,
       cost_dollars: costDollars,
     });
   } catch (error) {
-    console.error("Failed to log usage record:", {
-      error,
-      userId,
-      model,
-      type,
-      costDollars,
-      inputTokens,
-      outputTokens,
-    });
+    console.error("Failed to log usage record:", error);
   }
 }

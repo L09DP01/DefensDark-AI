@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useMutation, useAction } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { useQuery, useMutation, useAction } from "@/lib/supabase/hooks";
+import { api } from "@/lib/supabase/api";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";

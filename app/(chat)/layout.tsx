@@ -1,6 +1,6 @@
 "use client";
 
-import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
+import { Authenticated, Unauthenticated, AuthLoading } from "@/lib/supabase/hooks";
 import { ChatLayout } from "@/app/components/ChatLayout";
 import Loading from "@/components/ui/loading";
 

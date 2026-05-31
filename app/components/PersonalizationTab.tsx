@@ -1,9 +1,9 @@
 "use client";
 
 import { ChevronRight } from "lucide-react";
-import { useQuery, useMutation } from "convex/react";
-import { ConvexError } from "convex/values";
-import { api } from "@/convex/_generated/api";
+import { useQuery, useMutation } from "@/lib/supabase/hooks";
+import { ConvexError } from "@/lib/supabase/hooks";
+import { api } from "@/lib/supabase/api";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";

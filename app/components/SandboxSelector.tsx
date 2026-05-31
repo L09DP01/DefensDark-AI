@@ -1,7 +1,7 @@
 "use client";
 
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { useQuery } from "@/lib/supabase/hooks";
+import { api } from "@/lib/supabase/api";
 import {
   Check,
   Cloud,

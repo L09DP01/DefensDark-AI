@@ -1,6 +1,6 @@
 import "server-only";
 
-import { api } from "@/convex/_generated/api";
+import { api } from "@/lib/supabase/api";
 import { ChatSDKError } from "@/lib/errors";
 import { getConvexClient } from "@/lib/db/convex-client";
 import { getSuspensionMessage } from "@/lib/suspensionMessage";

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback } from "react";
-import { useAction } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { useAction } from "@/lib/supabase/hooks";
+import { api } from "@/lib/supabase/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { isSupportedImageMediaType } from "@/lib/utils/file-utils";
 import type { ChatMessage } from "@/types";

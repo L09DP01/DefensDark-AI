@@ -152,7 +152,7 @@ export const DELETE = async (req: NextRequest) => {
         });
 
       const adminCount = allMembers.data.filter(
-        (m) => m.role?.slug === "admin",
+        (m: any) => m.role?.slug === "admin",
       ).length;
 
       // Allow non-admins to remove themselves (leave team)

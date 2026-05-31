@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useAction, useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { useAction, useQuery } from "@/lib/supabase/hooks";
+import { api } from "@/lib/supabase/api";
 import { RefreshCw, Info, TrendingDown } from "lucide-react";
 import {
   Tooltip,

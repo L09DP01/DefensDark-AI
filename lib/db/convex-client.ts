@@ -1,4 +1,4 @@
-import { ConvexHttpClient } from "convex/browser";
+import { ConvexHttpClient } from "@/lib/supabase/api";
 
 // Shared singleton so Trigger.dev's setConvexUrl() override reaches every
 // caller. Lazy-init the client so this module is safe to import from code

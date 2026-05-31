@@ -1,7 +1,7 @@
 "use client";
 
 import React, { Component, ReactNode } from "react";
-import { ConvexError } from "convex/values";
+import { ConvexError } from "@/lib/supabase/hooks";
 import { toast } from "sonner";
 
 interface Props {

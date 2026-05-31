@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { ConvexError } from "convex/values";
+import { ConvexError } from "@/lib/supabase/hooks";
 import { useGlobalState } from "../contexts/GlobalState";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
@@ -48,8 +48,8 @@ import {
   PinOff,
   LoaderCircle,
 } from "lucide-react";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { useMutation } from "@/lib/supabase/hooks";
+import { api } from "@/lib/supabase/api";
 import { removeDraft } from "@/lib/utils/client-storage";
 import { openSettingsDialog } from "@/lib/utils/settings-dialog";
 import { ShareDialog } from "./ShareDialog";

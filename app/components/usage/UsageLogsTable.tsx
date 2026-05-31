@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { usePaginatedQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { usePaginatedQuery } from "@/lib/supabase/hooks";
+import { api } from "@/lib/supabase/api";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {

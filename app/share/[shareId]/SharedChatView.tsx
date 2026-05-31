@@ -1,7 +1,7 @@
 "use client";
 
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { useQuery, useMutation } from "@/lib/supabase/hooks";
+import { api } from "@/lib/supabase/api";
 import { SharedMessages } from "./SharedMessages";
 import { Loader2, AlertCircle } from "lucide-react";
 import { SharedChatProvider, useSharedChatContext } from "./SharedChatContext";

@@ -2,9 +2,9 @@
 
 import { useRef, useCallback } from "react";
 import { Trash2 } from "lucide-react";
-import { usePaginatedQuery, useMutation } from "convex/react";
-import { ConvexError } from "convex/values";
-import { api } from "@/convex/_generated/api";
+import { usePaginatedQuery, useMutation } from "@/lib/supabase/hooks";
+import { ConvexError } from "@/lib/supabase/hooks";
+import { api } from "@/lib/supabase/api";
 import { toast } from "sonner";
 import {
   Dialog,

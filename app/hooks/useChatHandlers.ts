@@ -1,6 +1,6 @@
 import { RefObject, useEffect, useRef } from "react";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { useMutation } from "@/lib/supabase/hooks";
+import { api } from "@/lib/supabase/api";
 import { useGlobalState } from "../contexts/GlobalState";
 import { useLatestRef } from "@/app/hooks/useLatestRef";
 import { isTauriEnvironment } from "@/app/hooks/useTauri";

@@ -1,7 +1,7 @@
 "use client";
 
-import { usePaginatedQuery, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { usePaginatedQuery, useMutation } from "@/lib/supabase/hooks";
+import { api } from "@/lib/supabase/api";
 
 /**
  * Wrapper around usePaginatedQuery for user chats.

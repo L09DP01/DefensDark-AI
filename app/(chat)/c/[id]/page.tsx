@@ -1,7 +1,7 @@
 "use client";
 
 import { Chat } from "../../../components/chat";
-import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
+import { Authenticated, Unauthenticated, AuthLoading } from "@/lib/supabase/hooks";
 import Loading from "@/components/ui/loading";
 import PricingDialog from "../../../components/PricingDialog";
 import { usePricingDialog } from "../../../hooks/usePricingDialog";

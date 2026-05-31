@@ -1,8 +1,8 @@
 "use client";
 
 import { ReactNode, useState } from "react";
-import { ConvexReactClient } from "convex/react";
-import { ConvexProviderWithAuth } from "convex/react";
+import { ConvexReactClient } from "@/lib/supabase/hooks";
+import { ConvexProviderWithAuth } from "@/lib/supabase/hooks";
 import { AuthKitProvider } from "@workos-inc/authkit-nextjs/components";
 import { useAuthFromAuthKit } from "@/lib/auth/use-auth-from-authkit";
 

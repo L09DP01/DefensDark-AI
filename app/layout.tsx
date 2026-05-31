@@ -5,7 +5,6 @@ import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { GlobalStateProvider } from "./contexts/GlobalState";
-import { ConvexClientProvider } from "@/components/ConvexClientProvider";
 import { TodoBlockProvider } from "./contexts/TodoBlockContext";
 import { PostHogProvider } from "./providers";
 import { DataStreamProvider } from "./components/DataStreamProvider";
@@ -121,7 +120,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-full`}
       >
-        <ConvexClientProvider>{content}</ConvexClientProvider>
+        {content}
       </body>
     </html>
   );

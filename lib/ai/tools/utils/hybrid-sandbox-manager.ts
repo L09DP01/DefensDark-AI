@@ -10,7 +10,7 @@ import { CentrifugoSandbox, type CentrifugoConfig } from "./centrifugo-sandbox";
 import { isCentrifugoSandbox, type ConnectionInfo } from "./sandbox-types";
 import { ensureSandboxConnection } from "./sandbox";
 import { getConvexClient } from "@/lib/db/convex-client";
-import { api } from "@/convex/_generated/api";
+import { api } from "@/lib/supabase/api";
 import { SANDBOX_ENVIRONMENT_TOOLS } from "./sandbox-tools";
 import { getPlatformDisplayName } from "./platform-utils";
 import { generateCentrifugoToken } from "@/lib/centrifugo/jwt";

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/app/api/stripe";
-import { ConvexHttpClient } from "convex/browser";
-import { api } from "@/convex/_generated/api";
+import { ConvexHttpClient } from "@/lib/supabase/api";
+import { api } from "@/lib/supabase/api";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 

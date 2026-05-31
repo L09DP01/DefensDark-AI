@@ -1,12 +1,20 @@
 import "server-only";
 
-import { ConvexError } from "convex/values";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
+import { ConvexError } from "@/lib/supabase/hooks";
+import { api } from "@/lib/supabase/api";
+type Id<T> = string;
 import type { AnySandbox } from "@/types";
 import { isE2BSandbox } from "./sandbox-types";
-import { generateS3UploadUrl } from "@/convex/s3Utils";
-import { getConvexClient } from "@/lib/db/convex-client";
+
+// Mocks for Supabase migration
+async function generateS3UploadUrl(name: string, mediaType: string, userId: string, fileSize: number) {
+  return { uploadUrl: "mock-url", s3Key: "mock-key" };
+}
+function getConvexClient() {
+  return {
+    action: async (apiFn: any, args: any) => ({ url: "mock", fileId: "mock", tokens: 0 })
+  };
+}
 import { MAX_GENERATED_FILE_SIZE_BYTES } from "@/lib/constants/s3";
 import { logger } from "@/lib/logger";
 

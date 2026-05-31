@@ -8,9 +8,9 @@ import React, {
   useRef,
 } from "react";
 import { createPortal } from "react-dom";
-import { useConvex, useAction } from "convex/react";
-import { ConvexError } from "convex/values";
-import { api } from "@/convex/_generated/api";
+import { useConvex, useAction } from "@/lib/supabase/hooks";
+import { ConvexError } from "@/lib/supabase/hooks";
+import { api } from "@/lib/supabase/api";
 import { ImageViewer } from "./ImageViewer";
 import { AlertCircle, File, Download } from "lucide-react";
 import { FilePart, FilePartRendererProps } from "@/types/file";

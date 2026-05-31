@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAction } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { useAction } from "@/lib/supabase/hooks";
+import { api } from "@/lib/supabase/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse, after } from "next/server";
 import { stripe } from "@/app/api/stripe";
-import { ConvexHttpClient } from "convex/browser";
-import { api } from "@/convex/_generated/api";
+import { ConvexHttpClient } from "@/lib/supabase/api";
+import { api } from "@/lib/supabase/api";
 import Stripe from "stripe";
 import {
   resetRateLimitBuckets,

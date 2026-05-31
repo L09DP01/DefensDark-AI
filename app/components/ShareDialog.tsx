@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useMutation, useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { useMutation, useQuery } from "@/lib/supabase/hooks";
+import { api } from "@/lib/supabase/api";
 import type { PreviewMessage } from "@/types";
 import {
   Dialog,

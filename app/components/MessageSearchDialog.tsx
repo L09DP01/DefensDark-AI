@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { usePaginatedQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { usePaginatedQuery } from "@/lib/supabase/hooks";
+import { api } from "@/lib/supabase/api";
 import { useAuth } from "@workos-inc/authkit-nextjs/components";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";

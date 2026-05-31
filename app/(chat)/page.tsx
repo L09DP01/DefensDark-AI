@@ -2,7 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
-import { Authenticated, Unauthenticated } from "convex/react";
+import { Authenticated, Unauthenticated } from "@/lib/supabase/hooks";
 import { ChatInput } from "../components/ChatInput";
 import Header from "../components/Header";
 import Footer from "../components/Footer";

@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { Centrifuge } from "centrifuge";
 import { getUserID } from "@/lib/auth/get-user-id";
 import { generateCentrifugoToken } from "@/lib/centrifugo/jwt";
-import { ConvexHttpClient } from "convex/browser";
-import { api } from "@/convex/_generated/api";
+import { ConvexHttpClient } from "@/lib/supabase/api";
+import { api } from "@/lib/supabase/api";
 import { phLogger } from "@/lib/posthog/server";
 
 interface CentrifugoPresenceClient {
@@ -101,7 +101,7 @@ export async function GET(request: NextRequest) {
   );
 
   // Mark each connection with live presence status
-  const enriched = connections.map((conn) => ({
+  const enriched = connections.map((conn: any) => ({
     ...conn,
     online: onlineConnectionIds.has(conn.connectionId),
   }));
@@ -115,13 +115,13 @@ export async function GET(request: NextRequest) {
   if (presenceReliable) {
     const now = Date.now();
     const stale = connections.filter(
-      (conn) =>
+      (conn: any) =>
         !onlineConnectionIds.has(conn.connectionId) &&
         now - conn.lastSeen > PRESENCE_GRACE_MS,
     );
     if (stale.length > 0) {
       const results = await Promise.allSettled(
-        stale.map((conn) =>
+        stale.map((conn: any) =>
           convex.mutation(api.localSandbox.disconnectByBackend, {
             serviceKey,
             connectionId: conn.connectionId,

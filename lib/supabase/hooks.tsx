@@ -80,13 +80,13 @@ export function usePaginatedQuery(apiFn: any, args: any, options: any) {
 }
 
 export function useMutation(apiFn: any) {
-  return async (args: any) => {
+  return async (args?: any) => {
     return await apiFn(args);
   };
 }
 
 export function useAction(apiFn: any) {
-  return async (args: any) => {
+  return async (args?: any) => {
     return await apiFn(args);
   };
 }

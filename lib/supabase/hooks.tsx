@@ -115,19 +115,17 @@ export type Doc<TableName> = any;
 import { useAuth } from "@workos-inc/authkit-nextjs/components";
 
 export function Authenticated({ children }: { children: React.ReactNode }) {
-   const { user, isLoading } = useAuth();
-   if (isLoading || !user) return null;
+   const { user } = useAuth();
+   if (!user) return null;
    return <>{children}</>;
 }
 
 export function Unauthenticated({ children }: { children: React.ReactNode }) {
-   const { user, isLoading } = useAuth();
-   if (isLoading || user) return null;
+   const { user } = useAuth();
+   if (user) return null;
    return <>{children}</>;
 }
 
 export function AuthLoading({ children }: { children: React.ReactNode }) {
-   const { isLoading } = useAuth();
-   if (!isLoading) return null;
-   return <>{children}</>;
+   return null;
 }

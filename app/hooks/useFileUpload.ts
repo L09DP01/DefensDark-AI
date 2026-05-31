@@ -20,7 +20,7 @@ import {
 } from "@/types/file";
 import type { ChatMode } from "@/types/chat";
 import { useGlobalState } from "../contexts/GlobalState";
-import { Id } from "@/convex/_generated/dataModel";
+import { Id } from "@/lib/supabase/hooks";
 import { isAgentMode } from "@/lib/utils/mode-helpers";
 import {
   getLocalFileMetadata,

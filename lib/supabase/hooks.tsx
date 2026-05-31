@@ -108,6 +108,9 @@ export class ConvexError extends Error {
   }
 }
 
+export type Id<TableName> = string;
+export type Doc<TableName> = any;
+
 export function Authenticated({ children }: { children: React.ReactNode }) {
    return <>{children}</>;
 }

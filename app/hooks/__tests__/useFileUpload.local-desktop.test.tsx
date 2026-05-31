@@ -24,7 +24,7 @@ jest.mock("convex/react", () => ({
       : saveFile,
 }));
 
-jest.mock("@/convex/_generated/api", () => ({
+jest.mock("@/lib/supabase/api", () => ({
   api: {
     fileStorage: { deleteFile: "deleteFile" },
     fileActions: { saveFile: "saveFile" },

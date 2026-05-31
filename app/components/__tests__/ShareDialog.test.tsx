@@ -38,7 +38,7 @@ jest.mock("@/components/icons/defensdark-ai-svg", () => ({
 }));
 
 // Mock Convex api
-jest.mock("@/convex/_generated/api", () => ({
+jest.mock("@/lib/supabase/api", () => ({
   api: {
     chats: {
       shareChat: "chats.shareChat",

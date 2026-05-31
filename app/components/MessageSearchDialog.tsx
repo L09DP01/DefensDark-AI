@@ -21,7 +21,7 @@ import {
   isThisWeek,
   isThisMonth,
 } from "date-fns";
-import type { Doc } from "@/convex/_generated/dataModel";
+import type { Doc } from "@/lib/supabase/hooks";
 import { useGlobalState } from "../contexts/GlobalState";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useChats } from "../hooks/useChats";

@@ -33,7 +33,7 @@ import { useSandboxPreference } from "@/app/hooks/useSandboxPreference";
 import { isTauriEnvironment } from "@/app/hooks/useTauri";
 import { resolveSubscriptionTier } from "@/lib/auth/entitlements";
 import { chatSidebarStorage } from "@/lib/utils/sidebar-storage";
-import type { Id } from "@/convex/_generated/dataModel";
+import type { Id } from "@/lib/supabase/hooks";
 import { useQuery } from "@/lib/supabase/hooks";
 import { api } from "@/lib/supabase/api";
 import type { SubscriptionTier } from "@/types";

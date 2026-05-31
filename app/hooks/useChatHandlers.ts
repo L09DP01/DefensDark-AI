@@ -7,7 +7,7 @@ import { isTauriEnvironment } from "@/app/hooks/useTauri";
 import { shouldUseAgentLongForAgent } from "@/lib/chat/agent-routing";
 import { isAgentMode } from "@/lib/utils/mode-helpers";
 import type { ChatMessage, ChatStatus } from "@/types";
-import { Id } from "@/convex/_generated/dataModel";
+import { Id } from "@/lib/supabase/hooks";
 import {
   countInputTokens,
   getMaxTokensForSubscription,

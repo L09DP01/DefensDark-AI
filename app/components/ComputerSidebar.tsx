@@ -23,7 +23,7 @@ import {
   type ChatStatus,
   type NoteCategory,
 } from "@/types/chat";
-import type { Id } from "@/convex/_generated/dataModel";
+type Id<T> = string;
 import { FilePartRenderer } from "./FilePartRenderer";
 import { TodoPanel } from "./TodoPanel";
 import {

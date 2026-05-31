@@ -98,16 +98,9 @@ Use tags like "critical", "confirmed", "needs-verification" to track finding sta
           tags,
         });
 
-        if (!result.success) {
-          return {
-            success: false,
-            error: result.error || "Failed to create note",
-          };
-        }
-
         return {
           success: true,
-          note_id: result.note_id,
+          note_id: (result as any)?.note_id ?? (result as any)?.id,
           message: `Note '${title}' created successfully`,
         };
       } catch (error) {
@@ -176,24 +169,17 @@ Use before creating a new note to check if a similar observation already exists
       search?: string;
     }) => {
       try {
-        const result = await listNotes({
+        const notes = await listNotes({
           userId: context.userID,
           category,
           tags,
           search,
         });
 
-        if (!result.success) {
-          return {
-            success: false,
-            error: result.error || "Failed to list notes",
-          };
-        }
-
         return {
           success: true,
-          notes: result.notes,
-          total_count: result.total_count,
+          notes: notes || [],
+          total_count: (notes || []).length,
         };
       } catch (error) {
         console.error("List notes tool error:", error);
@@ -270,18 +256,10 @@ Use to add technical details or evidence to a finding
           tags,
         });
 
-        if (!result.success) {
-          return {
-            success: false,
-            error: result.error || "Failed to update note",
-          };
-        }
-
         return {
           success: true,
-          message: `Note '${result.modified?.title || note_id}' updated successfully`,
-          original: result.original,
-          modified: result.modified,
+          message: `Note '${(result as any)?.title || note_id}' updated successfully`,
+          modified: result,
         };
       } catch (error) {
         console.error("Update note tool error:", error);
@@ -342,21 +320,14 @@ Use to delete test or scratch notes created during experimentation
     }),
     execute: async ({ note_id }: { note_id: string }) => {
       try {
-        const result = await deleteNote({
+        await deleteNote({
           userId: context.userID,
           noteId: note_id,
         });
 
-        if (!result.success) {
-          return {
-            success: false,
-            error: result.error || "Failed to delete note",
-          };
-        }
-
         return {
           success: true,
-          message: `Note '${result.deleted_title || note_id}' deleted successfully`,
+          message: `Note '${note_id}' deleted successfully`,
         };
       } catch (error) {
         console.error("Delete note tool error:", error);

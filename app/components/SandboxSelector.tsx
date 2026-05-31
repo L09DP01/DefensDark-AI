@@ -111,7 +111,7 @@ export function SandboxSelector({
   // Auto-select first local option for free users who default to Cloud
   useEffect(() => {
     if (!isFreeUser || value !== "e2b" || !connections?.length) return;
-    const desktop = connections.find((c) => c.isDesktop);
+    const desktop = connections.find((c: any) => c.isDesktop);
     onChange?.(desktop ? "desktop" : connections[0].connectionId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFreeUser, value, connections]);

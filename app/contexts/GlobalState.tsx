@@ -254,9 +254,9 @@ export const GlobalStateProvider: React.FC<GlobalStateProviderProps> = ({
   const defaultLocalSandboxPreference =
     useMemo<SandboxPreference | null>(() => {
       if (desktopBridgeActive) return "desktop";
-      const firstRemote = localConnections?.find((c) => !c.isDesktop);
+      const firstRemote = localConnections?.find((c: any) => !c.isDesktop);
       if (firstRemote) return firstRemote.connectionId;
-      const firstDesktop = localConnections?.find((c) => c.isDesktop);
+      const firstDesktop = localConnections?.find((c: any) => c.isDesktop);
       if (firstDesktop) return "desktop";
       return null;
     }, [desktopBridgeActive, localConnections]);

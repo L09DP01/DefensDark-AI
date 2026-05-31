@@ -148,7 +148,7 @@ export const ensureSandboxConnection = async (
       }
 
       try {
-        const sandbox = await Sandbox.betaCreate(SANDBOX_TEMPLATE, {
+        const sandbox = await (Sandbox as any).betaCreate(SANDBOX_TEMPLATE, {
           timeoutMs: BASH_SANDBOX_AUTOPAUSE_TIMEOUT,
           autoPause: true,
           secure: true,

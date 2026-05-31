@@ -14,7 +14,7 @@ import {
   writeSummarizationCompleted,
 } from "@/lib/utils/stream-writer-utils";
 import { isE2BSandbox } from "@/lib/ai/tools/utils/sandbox-types";
-import type { Id } from "@/convex/_generated/dataModel";
+import type { Id } from "@/lib/supabase/hooks";
 
 import { MESSAGES_TO_KEEP_UNSUMMARIZED } from "./constants";
 import {

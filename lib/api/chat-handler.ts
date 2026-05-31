@@ -98,7 +98,7 @@ import {
   writeUploadCompleteStatus,
   writeAutoContinue,
 } from "@/lib/utils/stream-writer-utils";
-import { Id } from "@/convex/_generated/dataModel";
+import type { Id } from "@/lib/supabase/hooks";
 import { getMaxStepsForUser } from "@/lib/chat/chat-processor";
 import { phLogger } from "@/lib/posthog/server";
 import {

@@ -3,7 +3,7 @@ import "server-only";
 import { api } from "@/lib/supabase/api";
 import { getConvexClient } from "@/lib/db/convex-client";
 import { UIMessagePart, UIMessage } from "ai";
-import { Id } from "@/convex/_generated/dataModel";
+import type { Id } from "@/lib/supabase/hooks";
 import {
   truncateMessagesToTokenLimit,
   getMaxTokensForSubscription,

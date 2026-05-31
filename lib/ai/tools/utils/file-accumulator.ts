@@ -1,4 +1,4 @@
-import type { Id } from "@/convex/_generated/dataModel";
+import type { Id } from "@/lib/supabase/hooks";
 
 export interface AccumulatedFileMetadata {
   fileId: Id<"files">;

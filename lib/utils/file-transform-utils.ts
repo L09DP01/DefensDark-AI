@@ -4,7 +4,7 @@ import { api } from "@/lib/supabase/api";
 import { getConvexClient } from "@/lib/db/convex-client";
 import { UIMessage } from "ai";
 import type { ChatMode, FileContent } from "@/types";
-import { Id } from "@/convex/_generated/dataModel";
+import type { Id } from "@/lib/supabase/hooks";
 import {
   isSandboxOnlyAgentUpload,
   isSupportedImageMediaType,

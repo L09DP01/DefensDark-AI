@@ -5,7 +5,7 @@ import {
   decode,
 } from "gpt-tokenizer";
 import type { SubscriptionTier } from "@/types";
-import type { Id } from "@/convex/_generated/dataModel";
+import type { Id } from "@/lib/supabase/hooks";
 import { FREE_MAX_CONTEXT_TOKENS } from "@/lib/rate-limit/free-config";
 
 const DISALLOWED_SPECIAL_TOKEN_MESSAGE = "Disallowed special token";

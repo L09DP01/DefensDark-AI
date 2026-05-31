@@ -14,7 +14,7 @@ import {
 } from "@/lib/token-utils";
 import { saveChatSummary } from "@/lib/db/actions";
 import { SubscriptionTier, ChatMode, Todo } from "@/types";
-import type { Id } from "@/convex/_generated/dataModel";
+import type { Id } from "@/lib/supabase/hooks";
 
 import {
   MESSAGES_TO_KEEP_UNSUMMARIZED,

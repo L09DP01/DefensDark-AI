@@ -3,7 +3,7 @@ import { twMerge } from "tailwind-merge";
 import { ChatSDKError, ErrorCode } from "./errors";
 import { ChatMessage, type ChatMode } from "@/types/chat";
 import { UIMessagePart } from "ai";
-import { Id } from "@/convex/_generated/dataModel";
+import type { Id } from "@/lib/supabase/hooks";
 
 export interface MessageRecord {
   id: string;

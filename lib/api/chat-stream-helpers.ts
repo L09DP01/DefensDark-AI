@@ -29,7 +29,7 @@ import {
 } from "@/lib/ai/providers";
 import type { ModelName } from "@/lib/ai/providers";
 import type { ContextUsageData } from "@/app/components/ContextUsageIndicator";
-import type { Id } from "@/convex/_generated/dataModel";
+import type { Id } from "@/lib/supabase/hooks";
 import type { UIMessagePart } from "ai";
 import {
   writeRateLimitWarning,

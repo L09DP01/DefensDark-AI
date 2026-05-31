@@ -64,7 +64,7 @@ export function SandboxSelector({
   };
   const desktopOptions: ConnectionOption[] =
     connections
-      ?.filter((conn) => conn.isDesktop)
+      ?.filter((conn: any) => conn.isDesktop)
       .map(() => ({
         id: "desktop" as string,
         label: "Local",
@@ -73,8 +73,8 @@ export function SandboxSelector({
       })) || [];
   const remoteOptions: ConnectionOption[] =
     connections
-      ?.filter((conn) => !conn.isDesktop)
-      .map((conn) => ({
+      ?.filter((conn: any) => !conn.isDesktop)
+      .map((conn: any) => ({
         id: conn.connectionId,
         label: conn.osInfo?.hostname || conn.name,
         shortLabel: conn.osInfo?.hostname || conn.name,

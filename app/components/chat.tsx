@@ -768,7 +768,7 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
     } else if (storedSandboxType === "desktop") {
       // Desktop preference — validate that a desktop connection exists
       if (localConnections !== undefined) {
-        const desktopExists = localConnections.some((conn) => conn.isDesktop);
+        const desktopExists = localConnections.some((conn: any) => conn.isDesktop);
         setSandboxPreference(desktopExists ? "desktop" : "e2b");
         hasInitializedSandboxRef.current = true;
       }
@@ -776,7 +776,7 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
     } else if (localConnections !== undefined) {
       // For remote connectionIds, validate the connection still exists
       const connectionExists = localConnections.some(
-        (conn) => conn.connectionId === storedSandboxType,
+        (conn: any) => conn.connectionId === storedSandboxType,
       );
       if (connectionExists) {
         setSandboxPreference(storedSandboxType);

@@ -53,7 +53,7 @@ export function useQuery(apiFn: any, args: any) {
 
 export function usePaginatedQuery(apiFn: any, args: any, options: any) {
   const [results, setResults] = useState<any[]>([]);
-  const [status, setStatus] = useState("LoadingMore");
+  const [status, setStatus] = useState<"Exhausted" | "LoadingMore" | "LoadingFirstPage" | "CanLoadMore" | undefined>("LoadingMore");
   const argsString = JSON.stringify(args || {});
   
   useEffect(() => {
@@ -100,9 +100,11 @@ export function useConvex() {
 }
 
 export class ConvexError extends Error {
-  constructor(message: string) {
+  data: any;
+  constructor(message: string, data?: any) {
     super(message);
     this.name = 'ConvexError';
+    this.data = data;
   }
 }
 

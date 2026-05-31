@@ -114,9 +114,9 @@ function useAutoSelectNewRemoteConnection({
   useEffect(() => {
     if (connections === undefined) return;
 
-    const remoteConnections = connections.filter((conn) => !conn.isDesktop);
+    const remoteConnections = connections.filter((conn: any) => !conn.isDesktop);
     const currentIds = new Set(
-      remoteConnections.map((conn) => conn.connectionId),
+      remoteConnections.map((conn: any) => conn.connectionId),
     );
     const previousIds = previousRemoteConnectionIdsRef.current;
     previousRemoteConnectionIdsRef.current = currentIds;
@@ -126,7 +126,7 @@ function useAutoSelectNewRemoteConnection({
     if (previousIds === null) return;
 
     const newConnection = remoteConnections.find(
-      (conn) => !previousIds.has(conn.connectionId),
+      (conn: any) => !previousIds.has(conn.connectionId),
     );
     if (!newConnection) return;
 
@@ -260,8 +260,8 @@ const RemoteControlTab = () => {
         {connections && connections.filter((c) => !c.isDesktop).length > 0 ? (
           <div className="space-y-2">
             {connections
-              .filter((conn) => !conn.isDesktop)
-              .map((conn) => (
+              .filter((conn: any) => !conn.isDesktop)
+              .map((conn: any) => (
                 <div
                   key={conn.connectionId}
                   className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg"

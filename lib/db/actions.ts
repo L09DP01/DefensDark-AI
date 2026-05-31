@@ -625,12 +625,12 @@ export async function prepareForNewStream({ chatId }: { chatId: string }) {
   }
 }
 
-export async function getCancellationStatus({ chatId }: { chatId: string }) {
+export async function getCancellationStatus({ chatId }: { chatId: string }): Promise<{ canceled_at: string | null } | null> {
   try {
     const supabase = createAdminClient();
     const { data, error } = await supabase.from("chats").select("canceled_at").eq("id", chatId).single();
     if (error) throw error;
-    return data?.canceled_at || null;
+    return data ? { canceled_at: data.canceled_at } : null;
   } catch (error) {
     return null;
   }
@@ -643,7 +643,7 @@ export async function startTempStream({ chatId, userId }: { chatId: string, user
   } catch (error) {}
 }
 
-export async function getTempCancellationStatus({ chatId }: { chatId: string }) {
+export async function getTempCancellationStatus({ chatId }: { chatId: string }): Promise<{ canceled: boolean } | null> {
   // Simplification for temp streams
   return null;
 }

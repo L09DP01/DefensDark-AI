@@ -1,4 +1,4 @@
-import { Id } from "@/convex/_generated/dataModel";
+import { Id } from "@/lib/supabase/hooks";
 
 export interface FileMessagePart {
   type: "file";

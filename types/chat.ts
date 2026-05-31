@@ -1,6 +1,6 @@
 import { UIMessage } from "ai";
 import { z } from "zod";
-import { Id } from "@/convex/_generated/dataModel";
+import { Id } from "@/lib/supabase/hooks";
 import type { FileDetails } from "./file";
 
 export type ChatMode = "agent" | "ask";

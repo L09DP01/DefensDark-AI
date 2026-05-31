@@ -76,7 +76,8 @@ export function usePaginatedQuery(apiFn: any, args?: any, options?: any) {
     // Basic mock
   }, []);
 
-  return { results, status, loadMore };
+  const isLoading = status === "LoadingFirstPage";
+  return { results, status, loadMore, isLoading };
 }
 
 export function useMutation(apiFn: any) {

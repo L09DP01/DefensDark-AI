@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 
-export function useQuery(apiFn: any, args: any) {
+export function useQuery(apiFn: any, args?: any) {
   const [data, setData] = useState<any>(undefined);
   const [error, setError] = useState<Error | null>(null);
   const argsString = JSON.stringify(args || {});
@@ -51,7 +51,7 @@ export function useQuery(apiFn: any, args: any) {
   return data;
 }
 
-export function usePaginatedQuery(apiFn: any, args: any, options: any) {
+export function usePaginatedQuery(apiFn: any, args?: any, options?: any) {
   const [results, setResults] = useState<any[]>([]);
   const [status, setStatus] = useState<"Exhausted" | "LoadingMore" | "LoadingFirstPage" | "CanLoadMore" | undefined>("LoadingMore");
   const argsString = JSON.stringify(args || {});

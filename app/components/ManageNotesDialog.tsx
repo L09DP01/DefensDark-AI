@@ -136,7 +136,7 @@ const ManageNotesDialogContent = () => {
                             </div>
                             {note.tags.length > 0 && (
                               <div className="flex gap-1 mt-2 flex-wrap">
-                                {note.tags.map((tag) => (
+                                {note.tags.map((tag: string) => (
                                   <span
                                     key={tag}
                                     className="text-xs px-2 py-0.5 bg-muted rounded-full text-muted-foreground"

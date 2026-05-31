@@ -257,7 +257,7 @@ const RemoteControlTab = () => {
         <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
           Connections
         </h4>
-        {connections && connections.filter((c) => !c.isDesktop).length > 0 ? (
+        {connections && connections.filter((c: any) => !c.isDesktop).length > 0 ? (
           <div className="space-y-2">
             {connections
               .filter((conn: any) => !conn.isDesktop)

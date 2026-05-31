@@ -112,15 +112,22 @@ export class ConvexError extends Error {
 export type Id<TableName> = string;
 export type Doc<TableName> = any;
 
+import { useAuth } from "@workos-inc/authkit-nextjs/components";
+
 export function Authenticated({ children }: { children: React.ReactNode }) {
+   const { user, isLoading } = useAuth();
+   if (isLoading || !user) return null;
    return <>{children}</>;
 }
 
 export function Unauthenticated({ children }: { children: React.ReactNode }) {
-   return null;
+   const { user, isLoading } = useAuth();
+   if (isLoading || user) return null;
+   return <>{children}</>;
 }
 
 export function AuthLoading({ children }: { children: React.ReactNode }) {
-   return null;
+   const { isLoading } = useAuth();
+   if (!isLoading) return null;
+   return <>{children}</>;
 }
-

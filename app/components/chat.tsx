@@ -1250,7 +1250,12 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
                       {!isMobile && (
                         <div className="w-full">
                           <ChatInput
-                            onSubmit={handleSubmit}
+                            onSubmit={(e) => {
+                              if (!isExistingChatRef.current) {
+                                setAwaitingServerChat(true);
+                              }
+                              handleSubmit(e as any);
+                            }}
                             onStop={handleStop}
                             onSendNow={handleSendNow}
                             status={status}
@@ -1284,7 +1289,12 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
               {(hasMessages || isExistingChat || isMobile) &&
                 !isChatNotFound && (
                   <ChatInput
-                    onSubmit={handleSubmit}
+                    onSubmit={(e) => {
+                      if (!isExistingChatRef.current) {
+                        setAwaitingServerChat(true);
+                      }
+                      handleSubmit(e as any);
+                    }}
                     onStop={handleStop}
                     onSendNow={handleSendNow}
                     status={status}

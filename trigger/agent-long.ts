@@ -57,7 +57,6 @@ import {
   setActiveTriggerRun,
   getMessagesByChatId,
   prepareForNewStream,
-  setConvexUrl,
 } from "@/lib/db/actions";
 import { getMaxTokensForSubscription } from "@/lib/token-utils";
 import { getBaseTodosForRequest } from "@/lib/utils/todo-utils";
@@ -86,7 +85,7 @@ import {
   getUserFriendlyProviderError,
 } from "@/lib/utils/error-utils";
 import { ChatSDKError } from "@/lib/errors";
-import type { Id } from "@/convex/_generated/dataModel";
+import type { Id } from "@/lib/supabase/hooks";
 import type {
   SubscriptionTier,
   Todo,
@@ -567,12 +566,7 @@ export const agentLongTask = task({
   },
 
   run: async (payload: AgentLongPayload, { ctx, signal: triggerSignal }) => {
-    // Point the Convex client at the correct per-branch preview deployment.
-    // NEXT_PUBLIC_CONVEX_URL in Trigger.dev's env vars only reflects the
-    // main deployment; preview branches each have their own Convex URL.
-    if (payload.convexUrl) {
-      setConvexUrl(payload.convexUrl);
-    }
+    // Removed setConvexUrl logic as Convex was replaced by Supabase
 
     const {
       chatId,

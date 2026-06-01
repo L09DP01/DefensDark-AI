@@ -157,9 +157,6 @@ importers:
       '@vercel/functions':
         specifier: ^3.6.0
         version: 3.6.0(@aws-sdk/credential-provider-web-identity@3.972.41)
-      '@workos-inc/node':
-        specifier: ^9.3.0
-        version: 9.3.0
       '@xterm/addon-fit':
         specifier: ^0.11.0
         version: 0.11.0
@@ -211,6 +208,9 @@ importers:
       jszip:
         specifier: ^3.10.1
         version: 3.10.1
+      kobara-js:
+        specifier: ^1.0.1
+        version: 1.0.1
       langchain:
         specifier: ^1.4.0
         version: 1.4.0(@langchain/core@1.1.46(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@2.2.0(@opentelemetry/api@1.9.0))(openai@6.38.0(ws@8.20.1)(zod@4.4.3))(ws@8.20.1))(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@2.2.0(@opentelemetry/api@1.9.0))(openai@6.38.0(ws@8.20.1)(zod@4.4.3))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(ws@8.20.1)(zod-to-json-schema@3.25.1(zod@4.4.3))
@@ -4092,10 +4092,6 @@ packages:
     peerDependencies:
       react: '>=17'
 
-  '@workos-inc/node@9.3.0':
-    resolution: {integrity: sha512-QFNl3ixF59L+vlTWPE5ix2EKhxJTVb5aALcA14PqB1zHpnGi4wC5i+YTyUJ08u4xw8e36MpZsvkDRoqsDpt+5w==}
-    engines: {node: '>=22.11.0'}
-
   '@xmldom/xmldom@0.8.13':
     resolution: {integrity: sha512-KRYzxepc14G/CEpEGc3Yn+JKaAeT63smlDr+vjB8jRfgTBBI9wRj/nkQEO+ucV8p8I9bfKLWp37uHgFrbntPvw==}
     engines: {node: '>=10.0.0'}
@@ -6346,6 +6342,9 @@ packages:
 
   khroma@2.1.0:
     resolution: {integrity: sha512-Ls993zuzfayK269Svk9hzpeGUKob/sIgZzyHYdjQoAdQetRKpOLj+k/QQQ/6Qi0Yz65mlROrfd+Ev+1+7dz9Kw==}
+
+  kobara-js@1.0.1:
+    resolution: {integrity: sha512-MEUsydigQxs04o4jK5Jx2brVWLcXHaMNlVdYiQ97sHYrFH3vgJ9TQP0DOatK08S8qnrpKCvbZtiEV2JADml/JA==}
 
   langchain@1.4.0:
     resolution: {integrity: sha512-p3H5U1vfO0T4ri/xxqI6jccRP3LYmOW6KGxaJcwI5mIGVR/G6eNhZyjSZB9d7me6J7an4Pc6zA8tH8Qa6/7xwA==}
@@ -12293,10 +12292,6 @@ snapshots:
       '@workos-inc/authkit-js': 0.20.0
       react: 19.2.6
 
-  '@workos-inc/node@9.3.0':
-    dependencies:
-      eventemitter3: 5.0.4
-
   '@xmldom/xmldom@0.8.13': {}
 
   '@xterm/addon-fit@0.11.0': {}
@@ -15178,6 +15173,8 @@ snapshots:
       json-buffer: 3.0.1
 
   khroma@2.1.0: {}
+
+  kobara-js@1.0.1: {}
 
   langchain@1.4.0(@langchain/core@1.1.46(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@2.2.0(@opentelemetry/api@1.9.0))(openai@6.38.0(ws@8.20.1)(zod@4.4.3))(ws@8.20.1))(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@2.2.0(@opentelemetry/api@1.9.0))(openai@6.38.0(ws@8.20.1)(zod@4.4.3))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(ws@8.20.1)(zod-to-json-schema@3.25.1(zod@4.4.3)):
     dependencies:

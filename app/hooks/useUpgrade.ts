@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAuth } from "@workos-inc/authkit-nextjs/components";
+import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import {
   captureAuthenticatedEvent,
@@ -7,7 +7,8 @@ import {
 } from "@/lib/analytics/client";
 
 export const useUpgrade = () => {
-  const { user } = useAuth();
+  const { data: session } = useSession();
+  const user = session?.user;
   const [upgradeLoading, setUpgradeLoading] = useState(false);
 
   const handleUpgrade = async (

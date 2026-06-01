@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@workos-inc/authkit-nextjs/components";
+import { useSession } from "next-auth/react";
 import { navigateToAuth } from "@/app/hooks/useTauri";
 import { Download } from "lucide-react";
 
@@ -14,7 +14,9 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ chatTitle, hideDownload = false }) => {
-  const { user, loading } = useAuth();
+  const { data: session, status } = useSession();
+  const user = session?.user;
+  const loading = status === "loading";
 
   return (
     <header className="w-full px-6 max-sm:px-4 flex-shrink-0 header-glass sticky top-0 z-50">

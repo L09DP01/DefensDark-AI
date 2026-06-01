@@ -7,7 +7,7 @@ import { Loader2, AlertCircle } from "lucide-react";
 import { SharedChatProvider, useSharedChatContext } from "./SharedChatContext";
 import { ComputerSidebarBase } from "@/app/components/ComputerSidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useAuth } from "@workos-inc/authkit-nextjs/components";
+import { useSession } from "next-auth/react";
 import Header from "@/app/components/Header";
 import ChatHeader from "@/app/components/ChatHeader";
 import MainSidebar from "@/app/components/Sidebar";
@@ -74,7 +74,9 @@ const UUID_REGEX =
 
 export function SharedChatView({ shareId }: SharedChatViewProps) {
   const isMobile = useIsMobile();
-  const { user, loading: authLoading } = useAuth();
+  const { data: session, status } = useSession();
+  const user = session?.user;
+  const authLoading = status === "loading";
   const { chatSidebarOpen, setChatSidebarOpen, input } = useGlobalState();
   const router = useRouter();
   const forkSharedChatMutation = useMutation(api.sharedChats.forkSharedChat);

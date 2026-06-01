@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { usePaginatedQuery } from "@/lib/supabase/hooks";
 import { api } from "@/lib/supabase/api";
-import { useAuth } from "@workos-inc/authkit-nextjs/components";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,7 +54,8 @@ export const MessageSearchDialog: React.FC<MessageSearchDialogProps> = ({
   isOpen,
   onClose,
 }) => {
-  const { user } = useAuth();
+  const { data: session } = useSession();
+  const user = session?.user;
   const router = useRouter();
   const { setChatSidebarOpen, closeSidebar } = useGlobalState();
   const isMobile = useIsMobile();
@@ -65,8 +66,7 @@ export const MessageSearchDialog: React.FC<MessageSearchDialogProps> = ({
   const chatsQuery = useChats(shouldFetchChats);
   const chats = chatsQuery.results ?? [];
   const trimmedDebouncedQuery = debouncedQuery.trim();
-  const isSearchReady =
-    trimmedDebouncedQuery.length >= MIN_SEARCH_QUERY_LENGTH;
+  const isSearchReady = trimmedDebouncedQuery.length >= MIN_SEARCH_QUERY_LENGTH;
   const [allResults, setAllResults] = useState<MessageSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const loaderRef = useRef<HTMLDivElement>(null);
@@ -77,9 +77,7 @@ export const MessageSearchDialog: React.FC<MessageSearchDialogProps> = ({
   // Use Convex usePaginatedQuery for search
   const searchResults = usePaginatedQuery(
     api.messages.searchMessages,
-    isSearchReady && user
-      ? { searchQuery: trimmedDebouncedQuery }
-      : "skip",
+    isSearchReady && user ? { searchQuery: trimmedDebouncedQuery } : "skip",
     { initialNumItems: 20 },
   );
 

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { DropdownMenu } from "@/components/ui/dropdown-menu";
 import { ModeSelectorTrigger, ModeSelectorContent } from "./ModeSelectorMenu";
 import { useGlobalState } from "@/app/contexts/GlobalState";
-import { useAuth } from "@workos-inc/authkit-nextjs/components";
+import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { AgentUpgradeDialog } from "./AgentUpgradeDialog";
 import { navigateToAuth } from "@/app/hooks/useTauri";
@@ -26,7 +26,8 @@ export function ChatModeSelector({ className }: ChatModeSelectorProps) {
     selectedModel,
     setSelectedModel,
   } = useGlobalState();
-  const { user } = useAuth();
+  const { data: session } = useSession();
+  const user = session?.user;
   const [agentUpgradeDialogOpen, setAgentUpgradeDialogOpen] = useState(false);
 
   const handleAgentModeClick = () => {

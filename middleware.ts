@@ -1,65 +1,32 @@
-import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
+import { auth } from "@/auth";
+import { NextResponse } from "next/server";
 
-export async function middleware(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  });
+export default auth((req) => {
+  const isLoggedIn = !!req.auth;
+  const pathname = req.nextUrl.pathname;
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            request.cookies.set(name, value)
-          );
-          supabaseResponse = NextResponse.next({
-            request,
-          });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
-
-  // Refresh session if expired - required for Server Components
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const pathname = request.nextUrl.pathname;
-
-  // Paths that require authentication
   const isProtectedRoute =
     pathname === "/c" ||
     pathname.startsWith("/c/") ||
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/settings");
 
-  if (isProtectedRoute && !user) {
-    // If it's an API route or a Server Action POST request, return 401
-    if (pathname.startsWith("/api/") || request.method === "POST") {
+  if (isProtectedRoute && !isLoggedIn) {
+    if (pathname.startsWith("/api/") || req.method === "POST") {
       return NextResponse.json(
         { error: "Unauthorized: You must be logged in." },
-        { status: 401 }
+        { status: 401 },
       );
     }
-    // Otherwise, redirect to login
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    url.searchParams.set("redirect_to", pathname);
+    const url = req.nextUrl.clone();
+    // Redirect to default NextAuth signin page
+    url.pathname = "/api/auth/signin";
+    url.searchParams.set("callbackUrl", req.nextUrl.href);
     return NextResponse.redirect(url);
   }
 
-  return supabaseResponse;
-}
+  return NextResponse.next();
+});
 
 export const config = {
   matcher: [

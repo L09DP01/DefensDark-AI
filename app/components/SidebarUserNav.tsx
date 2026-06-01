@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, useEffect } from "react";
-import { useAuth } from "@workos-inc/authkit-nextjs/components";
+import { useSession } from "next-auth/react";
 import { useAction, useQuery } from "@/lib/supabase/hooks";
 import { api } from "@/lib/supabase/api";
 import {
@@ -102,7 +102,8 @@ const UpgradeBanner = ({ isCollapsed }: { isCollapsed: boolean }) => {
 };
 
 const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
-  const { user } = useAuth();
+  const { data: session } = useSession();
+  const user = session?.user;
   const { isCheckingProPlan, subscription } = useGlobalState();
   const [rateLimitsExpanded, setRateLimitsExpanded] = useState(false);
   const [tokenUsage, setTokenUsage] = useState<{
@@ -213,8 +214,8 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
   };
 
   const getUserInitials = () => {
-    const firstName = user.firstName?.charAt(0)?.toUpperCase() || "";
-    const lastName = user.lastName?.charAt(0)?.toUpperCase() || "";
+    const firstName = user.name?.charAt(0)?.toUpperCase() || "";
+    const lastName = user.name?.split(" ")[1]?.charAt(0)?.toUpperCase() || "";
     if (firstName && lastName) {
       return firstName + lastName;
     }
@@ -228,10 +229,10 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
   };
 
   const getDisplayName = () => {
-    if (user.firstName && user.lastName) {
-      return `${user.firstName} ${user.lastName}`;
+    if (user.name) {
+      return user.name;
     }
-    return user.firstName || user.lastName || "User";
+    return user.name || "User";
   };
 
   return (
@@ -277,7 +278,7 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
               >
                 <Avatar data-testid="user-avatar" className="h-7 w-7">
                   <AvatarImage
-                    src={user.profilePictureUrl || undefined}
+                    src={user?.image || undefined}
                     alt={getDisplayName()}
                   />
                   <AvatarFallback className="text-xs">
@@ -297,7 +298,7 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
             >
               <Avatar data-testid="user-avatar" className="h-7 w-7">
                 <AvatarImage
-                  src={user.profilePictureUrl || undefined}
+                  src={user?.image || undefined}
                   alt={getDisplayName()}
                 />
                 <AvatarFallback className="text-xs">

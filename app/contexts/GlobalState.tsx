@@ -10,7 +10,7 @@ import React, {
   useRef,
   ReactNode,
 } from "react";
-import { useAuth } from "@workos-inc/authkit-nextjs/components";
+import { useSession } from "next-auth/react";
 import {
   type ChatMode,
   type SelectedModel,
@@ -170,7 +170,9 @@ interface GlobalStateProviderProps {
 export const GlobalStateProvider: React.FC<GlobalStateProviderProps> = ({
   children,
 }) => {
-  const { user, entitlements } = useAuth();
+  const { data: session } = useSession();
+  const user = session?.user;
+  const entitlements: string[] = []; // Add logic if you store entitlements in NextAuth session
   const isMobile = useIsMobile();
   const prevIsMobile = useRef(isMobile);
   const [input, setInput] = useState("");
@@ -366,7 +368,7 @@ export const GlobalStateProvider: React.FC<GlobalStateProviderProps> = ({
       if (desktopEntitlementRefreshUserRef.current === user.id) {
         return;
       }
-      desktopEntitlementRefreshUserRef.current = user.id;
+      desktopEntitlementRefreshUserRef.current = user.id || null;
 
       setIsCheckingProPlan(true);
       try {

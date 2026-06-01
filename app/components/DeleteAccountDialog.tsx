@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { useAuth } from "@workos-inc/authkit-nextjs/components";
+import { useSession } from "next-auth/react";
 import { useMutation } from "@/lib/supabase/hooks";
 import { api } from "@/lib/supabase/api";
 import {
@@ -27,7 +27,8 @@ export const DeleteAccountDialog = ({
   open,
   onOpenChange,
 }: DeleteAccountDialogProps) => {
-  const { user } = useAuth();
+  const { data: session } = useSession();
+  const user = session?.user;
   const deleteAllUserData = useMutation(api.userDeletion.deleteAllUserData);
   const [isDeleting, setIsDeleting] = useState(false);
   const [emailInput, setEmailInput] = useState("");

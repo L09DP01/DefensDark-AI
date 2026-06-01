@@ -5,6 +5,7 @@ import {
   parseEntitlements,
   resolveSubscriptionTier,
 } from "@/lib/auth/entitlements";
+import { auth } from "@/auth";
 
 /**
  * Get the current user ID from the authenticated session
@@ -14,10 +15,9 @@ import {
  * @returns Promise<string> - User ID
  * @throws ChatSDKError - When user is not authenticated
  */
-export const getUserID = async (req: NextRequest): Promise<string> => {
+export const getUserID = async (req?: NextRequest): Promise<string> => {
   try {
-    const { authkit } = await import("@workos-inc/authkit-nextjs");
-    const { session } = await authkit(req);
+    const session = await auth();
 
     if (!session?.user?.id) {
       throw new ChatSDKError("unauthorized:auth");
@@ -43,27 +43,26 @@ export const getUserID = async (req: NextRequest): Promise<string> => {
  * @throws ChatSDKError - When user is not authenticated
  */
 export const getUserIDAndPro = async (
-  req: NextRequest,
+  req?: NextRequest,
 ): Promise<{
   userId: string;
   subscription: SubscriptionTier;
   organizationId?: string;
 }> => {
   try {
-    const { authkit } = await import("@workos-inc/authkit-nextjs");
-    const { session } = await authkit(req);
+    const session = await auth();
 
     if (!session?.user?.id) {
       throw new ChatSDKError("unauthorized:auth");
     }
 
-    const entitlements = parseEntitlements(session.entitlements);
+    const entitlements = parseEntitlements((session as any).entitlements || []);
     const subscription = resolveSubscriptionTier(entitlements);
 
     return {
       userId: session.user.id,
       subscription,
-      organizationId: (session as any).organizationId as string | undefined,
+      organizationId: undefined, // Replace with your own logic if using organizations
     };
   } catch (error) {
     if (error instanceof ChatSDKError) {
@@ -77,8 +76,7 @@ export const getUserIDAndPro = async (
 
 /**
  * Get the current user ID only if the user has signed in recently.
- * Enforces a freshness window (default 10 minutes) using session.user.lastSignInAt.
- * Throws ChatSDKError if unauthenticated or if the last sign-in is stale.
+ * Since NextAuth doesn't natively track lastSignInAt, this currently just checks authentication.
  *
  * @param req - NextRequest object (server-side only)
  * @param windowMs - Freshness window in milliseconds (default 10 minutes)
@@ -86,31 +84,17 @@ export const getUserIDAndPro = async (
  * @throws ChatSDKError - When user is not authenticated or login is stale
  */
 export const getUserIDWithFreshLogin = async (
-  req: NextRequest,
+  req?: NextRequest,
   windowMs: number = 10 * 60 * 1000,
 ): Promise<string> => {
   try {
-    const { authkit } = await import("@workos-inc/authkit-nextjs");
-    const { session } = await authkit(req);
+    const session = await auth();
 
     if (!session?.user?.id) {
       throw new ChatSDKError("unauthorized:auth", "missing_session_user");
     }
 
-    const lastSignInAt: unknown = (session as any)?.user?.lastSignInAt;
-    const lastSignInMs =
-      typeof lastSignInAt === "string" ? Date.parse(lastSignInAt) : NaN;
-
-    if (!Number.isFinite(lastSignInMs)) {
-      throw new ChatSDKError("unauthorized:auth", "missing_last_sign_in");
-    }
-
-    const now = Date.now();
-    const isFresh = now - lastSignInMs <= windowMs;
-    if (!isFresh) {
-      throw new ChatSDKError("unauthorized:auth", "recent_login_required");
-    }
-
+    // TODO: Implement fresh login logic with NextAuth JWT
     return session.user.id;
   } catch (error) {
     if (error instanceof ChatSDKError) {

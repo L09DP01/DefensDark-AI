@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@workos-inc/authkit-nextjs/components";
+import { useSession } from "next-auth/react";
 import { Loader2, X } from "lucide-react";
 import { useGlobalState } from "../contexts/GlobalState";
 import { useUpgrade } from "../hooks/useUpgrade";
@@ -199,7 +199,8 @@ const PremiumPlanSelector: React.FC<PremiumPlanSelectorProps> = ({
 };
 
 const PricingDialog: React.FC<PricingDialogProps> = ({ isOpen, onClose }) => {
-  const { user } = useAuth();
+  const { data: session } = useSession();
+  const user = session?.user;
   const { subscription, isCheckingProPlan, setTeamPricingDialogOpen } =
     useGlobalState();
   const { upgradeLoading, handleUpgrade } = useUpgrade();

@@ -2,14 +2,15 @@
 
 import posthog from "posthog-js";
 import { PostHogProvider as PHProvider } from "posthog-js/react";
-import { useAuth } from "@workos-inc/authkit-nextjs/components";
+import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 import { useGlobalState } from "./contexts/GlobalState";
 import { shouldDropExpectedConvexException } from "@/lib/posthog/expected-convex-errors";
 
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
   const { subscription } = useGlobalState();
-  const { user } = useAuth();
+  const { data: session } = useSession();
+  const user = session?.user;
 
   useEffect(() => {
     if (!process.env.NEXT_PUBLIC_POSTHOG_KEY) return;
@@ -43,9 +44,7 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
     posthog.opt_in_capturing();
     posthog.identify(user!.id, {
       email: user!.email,
-      name:
-        [user!.firstName, user!.lastName].filter(Boolean).join(" ") ||
-        user!.email,
+      name: user!.name || user!.email,
       subscription,
     });
   }, [subscription, user]);

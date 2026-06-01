@@ -1,5 +1,5 @@
-import { signOut } from "@workos-inc/authkit-nextjs";
+import { redirect } from "next/navigation";
 
-export const GET = async () => {
-  return signOut();
-};
+export async function GET(request: Request) {
+  redirect("/api/auth/signout");
+}

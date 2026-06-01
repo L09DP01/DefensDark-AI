@@ -1,10 +1,12 @@
 "use client";
 
 import React from "react";
-import { useAuth } from "@workos-inc/authkit-nextjs/components";
+import { useSession } from "next-auth/react";
 
 const Footer: React.FC = () => {
-  const { user, loading } = useAuth();
+  const { data: session, status } = useSession();
+  const user = session?.user;
+  const loading = status === "loading";
 
   if (loading || user) {
     return null;

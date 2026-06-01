@@ -10,7 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useUpgrade } from "../hooks/useUpgrade";
-import { useAuth } from "@workos-inc/authkit-nextjs/components";
+import { useSession } from "next-auth/react";
 import { useGlobalState } from "../contexts/GlobalState";
 import UpgradeConfirmationDialog from "./UpgradeConfirmationDialog";
 import { PRICING } from "@/lib/pricing/features";
@@ -28,7 +28,8 @@ const TeamPricingDialog: React.FC<TeamPricingDialogProps> = ({
   initialSeats = 5,
   initialPlan = "monthly",
 }) => {
-  const { user } = useAuth();
+  const { data: session } = useSession();
+  const user = session?.user;
   const { subscription } = useGlobalState();
   const { upgradeLoading, handleUpgrade } = useUpgrade();
   const [billingPeriod, setBillingPeriod] = React.useState<

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "@workos-inc/authkit-nextjs/components";
+import { useSession } from "next-auth/react";
 
 const HACKING_QUESTIONS = [
   (name?: string) =>
@@ -26,8 +26,9 @@ const HACKING_QUESTIONS = [
 ];
 
 export const HackingSuggestions = () => {
-  const { user } = useAuth();
-  const name = user?.firstName || undefined;
+  const { data: session } = useSession();
+  const user = session?.user;
+  const name = user?.name || undefined;
   const [questionFn] = useState(
     () =>
       HACKING_QUESTIONS[Math.floor(Math.random() * HACKING_QUESTIONS.length)],

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@workos-inc/authkit-nextjs/components";
+import { useSession } from "next-auth/react";
 import {
   PanelLeft,
   Sparkle,
@@ -55,7 +55,9 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
   isChatNotFound = false,
   branchedFromChatTitle,
 }) => {
-  const { user, loading } = useAuth();
+  const { data: session, status } = useSession();
+  const user = session?.user;
+  const loading = status === "loading";
   const {
     toggleChatSidebar,
     subscription,

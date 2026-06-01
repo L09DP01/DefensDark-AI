@@ -4,6 +4,7 @@ import { NextRequest, NextResponse, after } from "next/server";
 import { getSuspensionMessage } from "@/lib/suspensionMessage";
 import { phLogger } from "@/lib/posthog/server";
 import { createClient } from "@/lib/supabase/server";
+import { KobaraClient } from "kobara-js";
 
 function planLookupKeyToTier(
   lookupKey: string,
@@ -54,13 +55,45 @@ export const POST = async (req: NextRequest) => {
 
     if (paymentProvider === "moncash") {
       // MONCASH (KOBARA) INTEGRATION
-      // Here you would call Kobara API to generate a MonCash payment link
-      // Because Kobara expects HTG or USD, we map the plan to an amount
-      // This is a placeholder for the actual Kobara API call
+      const PRICING = {
+        "pro-monthly-plan": 25,
+        "pro-yearly-plan": 21 * 12,
+        "pro-plus-monthly-plan": 60,
+        "pro-plus-yearly-plan": 50 * 12,
+        "ultra-monthly-plan": 200,
+        "ultra-yearly-plan": 166 * 12,
+        "team-monthly-plan": 40,
+        "team-yearly-plan": 33 * 12,
+      };
 
-      const moncashUrl = `https://kobara.app/pay/test-link?plan=${subscriptionLevel}&user=${userId}`;
+      const amount = PRICING[subscriptionLevel as keyof typeof PRICING] || 25;
 
-      return NextResponse.json({ url: moncashUrl });
+      const baseUrl =
+        process.env.NEXT_PUBLIC_BASE_URL || "https://defensdark-ai.vercel.app";
+      const successUrl = new URL(baseUrl);
+      successUrl.searchParams.set("refresh", "entitlements");
+      const cancelUrl = new URL(baseUrl);
+
+      const kobara = new KobaraClient({
+        apiKey: process.env.KOBARA_SECRET_KEY || "",
+      });
+
+      const payment = await kobara.payments.create({
+        amount,
+        currency: "USD",
+        description: `DefensDark AI - ${subscriptionLevel}`,
+        customer: {
+          email: user?.user?.email,
+        },
+        successUrl: successUrl.toString(),
+        errorUrl: cancelUrl.toString(),
+        metadata: {
+          userId,
+          requestedPlan: subscriptionLevel,
+        },
+      });
+
+      return NextResponse.json({ url: payment.payment_url });
     } else {
       // STRIPE INTEGRATION
       let price;

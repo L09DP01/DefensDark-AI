@@ -24,6 +24,7 @@ export const useUpgrade = () => {
     e?: React.MouseEvent<HTMLButtonElement | HTMLDivElement>,
     quantity?: number,
     currentSubscription?: "free" | "pro" | "pro-plus" | "ultra" | "team",
+    paymentProvider?: "stripe" | "moncash",
   ) => {
     e?.preventDefault();
 
@@ -41,8 +42,13 @@ export const useUpgrade = () => {
 
     try {
       const selectedPlan = planKey || "pro-monthly-plan";
-      const requestBody: { plan: string; quantity?: number } = {
+      const requestBody: {
+        plan: string;
+        quantity?: number;
+        paymentProvider?: string;
+      } = {
         plan: selectedPlan,
+        paymentProvider,
       };
 
       // Add quantity for team plans
@@ -57,6 +63,7 @@ export const useUpgrade = () => {
           quantity,
           from_tier: currentSubscription ?? "free",
           checkout_type: "new_subscription",
+          payment_provider: paymentProvider,
         });
 
         const res = await fetch("/api/subscribe", {
@@ -115,6 +122,7 @@ export const useUpgrade = () => {
             plan: planKey,
             confirm: true,
             quantity: quantity,
+            paymentProvider: paymentProvider,
           }),
         });
 

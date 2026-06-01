@@ -1,6 +1,6 @@
 import { stripe } from "@/app/api/stripe";
-import { workos } from "@/app/api/workos";
 import Stripe from "stripe";
+import { createAdminClient } from "@/lib/supabase/server";
 
 export async function resolveUserIdsFromCustomer(
   customerId: string,
@@ -11,30 +11,53 @@ export async function resolveUserIdsFromCustomer(
     if (customerData.deleted) return { userIds: [], orgId: null };
 
     const customer = customerData as Stripe.Customer;
-    const orgId = customer.metadata?.workOSOrganizationId ?? null;
-    if (!orgId) {
+    const userId = customer.metadata?.supabaseUserId ?? null;
+
+    const supabase = await createAdminClient();
+
+    if (!userId) {
+      // Try to find the user in Supabase by stripe_customer_id
+      const { data: sub } = await supabase
+        .from("subscriptions")
+        .select("user_id, team_id")
+        .eq("stripe_customer_id", customerId)
+        .limit(1)
+        .single();
+
+      if (sub?.user_id) {
+        return { userIds: [sub.user_id], orgId: sub.team_id };
+      }
+
       console.error(
-        `[${logPrefix}] Customer ${customerId} missing workOSOrganizationId metadata`,
+        `[${logPrefix}] Customer ${customerId} missing supabaseUserId metadata and not found in db`,
       );
       return { userIds: [], orgId: null };
     }
 
-    const memberships = await workos.userManagement.listOrganizationMemberships(
-      {
-        organizationId: orgId,
-        statuses: ["active"],
-      },
-    );
+    // Check if this user is part of a team subscription
+    const { data: sub } = await supabase
+      .from("subscriptions")
+      .select("team_id")
+      .eq("stripe_customer_id", customerId)
+      .limit(1)
+      .single();
 
-    const allMemberships = await memberships.autoPagination();
-    const userIds = allMemberships.map((membership) => membership.userId);
+    const teamId = sub?.team_id || null;
 
-    if (userIds.length === 0) {
-      console.error(`[${logPrefix}] No active memberships for org ${orgId}`);
-      return { userIds: [], orgId };
+    if (teamId) {
+      // Fetch all team members
+      const { data: members } = await supabase
+        .from("team_members")
+        .select("user_id")
+        .eq("team_id", teamId);
+
+      if (members && members.length > 0) {
+        const teamUserIds = members.map((m) => m.user_id);
+        return { userIds: teamUserIds, orgId: teamId };
+      }
     }
 
-    return { userIds, orgId };
+    return { userIds: [userId], orgId: null };
   } catch (error) {
     console.error(
       `[${logPrefix}] Failed to resolve users for customer ${customerId}:`,

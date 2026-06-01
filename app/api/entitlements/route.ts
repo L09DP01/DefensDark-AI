@@ -1,123 +1,96 @@
 import { NextRequest } from "next/server";
-import { WorkOS } from "@workos-inc/node";
-import {
-  json,
-  extractErrorMessage,
-  isRateLimitError,
-} from "@/lib/api/response";
-import {
-  parseEntitlements,
-  resolveSubscriptionTier,
-} from "@/lib/auth/entitlements";
+import { json } from "@/lib/api/response";
+import { auth } from "@/auth";
+import { createClient } from "@/lib/supabase/server";
+import type { SubscriptionTier } from "@/types";
 
-const workos = new WorkOS(process.env.WORKOS_API_KEY!, {
-  clientId: process.env.WORKOS_CLIENT_ID!,
-});
+function planTierToEntitlements(tier: SubscriptionTier): string[] {
+  switch (tier) {
+    case "ultra":
+      return ["ultra-plan"];
+    case "pro-plus":
+      return ["pro-plus-plan"];
+    case "pro":
+      return ["pro-plan"];
+    case "team":
+      return ["team-plan"];
+    default:
+      return [];
+  }
+}
 
 export async function GET(req: NextRequest) {
   try {
-    // Get the session cookie
-    const sessionCookie = req.cookies.get("wos-session")?.value;
+    const session = await auth();
 
-    if (!sessionCookie) {
-      return json({ error: "No session cookie found" }, { status: 401 });
+    if (!session?.user?.id) {
+      return json({ error: "No session found" }, { status: 401 });
     }
 
-    // Load the original session
-    const session = workos.userManagement.loadSealedSession({
-      cookiePassword: process.env.WORKOS_COOKIE_PASSWORD!,
-      sessionData: sessionCookie,
+    const supabase = await createClient();
+
+    // 1. Fetch user's personal subscriptions
+    const { data: userSubs } = await supabase
+      .from("subscriptions")
+      .select("*")
+      .eq("user_id", session.user.id);
+
+    // 2. Fetch user's team memberships to get team subscriptions
+    const { data: teamMembers } = await supabase
+      .from("team_members")
+      .select("team_id")
+      .eq("user_id", session.user.id);
+
+    let teamSubs: any[] = [];
+    if (teamMembers && teamMembers.length > 0) {
+      const teamIds = teamMembers.map((tm) => tm.team_id);
+      const { data } = await supabase
+        .from("subscriptions")
+        .select("*")
+        .in("team_id", teamIds);
+      if (data) teamSubs = data;
+    }
+
+    const allSubs = [...(userSubs || []), ...teamSubs];
+
+    // 3. Filter active subscriptions considering the 3-day grace period
+    const graceDate = new Date();
+    graceDate.setDate(graceDate.getDate() - 3);
+
+    const activeSubs = allSubs.filter((sub) => {
+      // If manually canceled and expired, usually we drop it. But let's follow the grace period strictly.
+      if (sub.status === "canceled") return false;
+      if (sub.expires_at) {
+        const expiresAt = new Date(sub.expires_at);
+        if (expiresAt < graceDate) return false;
+      }
+      return true;
     });
 
-    // First authenticate to get user and organization info
-    const authResult = await session.authenticate();
+    // 4. Determine the highest tier
+    let bestTier: SubscriptionTier = "free";
+    const tierPriority: Record<SubscriptionTier, number> = {
+      ultra: 4,
+      team: 3,
+      "pro-plus": 2,
+      pro: 1,
+      free: 0,
+    };
 
-    let organizationId: string | undefined;
-    if (authResult.authenticated) {
-      // Check if organizationId is already available in the session
-      organizationId = (authResult as any).organizationId;
-
-      // If organizationId is not in session, fetch it using userId
-      if (!organizationId) {
-        const userId = (authResult as any).user?.id;
-
-        if (userId) {
-          // Get organization membership for this user
-          try {
-            const memberships =
-              await workos.userManagement.listOrganizationMemberships({
-                userId: userId,
-                statuses: ["active"],
-              });
-
-            // Use the first active membership's organization ID
-            if (memberships.data && memberships.data.length > 0) {
-              organizationId = memberships.data[0].organizationId;
-            }
-          } catch (membershipError) {
-            // Rethrow rate-limit errors so the outer catch returns 429
-            // instead of silently falling through to an unscoped refresh
-            if (isRateLimitError(membershipError)) {
-              throw membershipError;
-            }
-            console.error(
-              "Failed to fetch organization memberships:",
-              membershipError,
-            );
-          }
-        }
+    for (const sub of activeSubs) {
+      if (tierPriority[sub.tier as SubscriptionTier] > tierPriority[bestTier]) {
+        bestTier = sub.tier as SubscriptionTier;
       }
     }
 
-    // Refresh with organization ID to ensure we get entitlements for the correct org
-    const refreshResult = organizationId
-      ? await session.refresh({ organizationId })
-      : await session.refresh();
+    const allEntitlements = planTierToEntitlements(bestTier);
 
-    const { sealedSession, entitlements } = refreshResult as any;
-
-    const allEntitlements = parseEntitlements(entitlements);
-    const subscription = resolveSubscriptionTier(allEntitlements);
-
-    // Create response with entitlements and normalized subscription tier
-    const response = json({
+    return json({
       entitlements: allEntitlements,
-      subscription,
+      subscription: bestTier,
     });
-
-    // Set the updated refresh session data in a cookie
-    if (sealedSession) {
-      response.cookies.set("wos-session", sealedSession, {
-        httpOnly: true,
-        sameSite: "lax",
-        secure: true,
-      });
-    }
-
-    return response;
   } catch (error) {
-    // On WorkOS rate limits, return a 429 so the client knows to retry
-    // rather than silently downgrading the user to free tier
-    if (isRateLimitError(error)) {
-      return json(
-        { error: "Rate limited", entitlements: [], subscription: "free" },
-        { status: 429 },
-      );
-    }
-
-    const normalized = extractErrorMessage(error).toLowerCase();
-    const should401 =
-      normalized.includes("invalid_grant") ||
-      normalized.includes("session has already ended");
-
-    if (!should401) {
-      // Keep auth errors quiet, log only unexpected cases
-      console.error("Error refreshing session:", error);
-    }
-
-    return json(
-      { error: should401 ? "Unauthorized" : "Failed to refresh session" },
-      { status: should401 ? 401 : 500 },
-    );
+    console.error("Failed to fetch entitlements:", error);
+    return json({ error: "Failed to fetch entitlements" }, { status: 500 });
   }
 }

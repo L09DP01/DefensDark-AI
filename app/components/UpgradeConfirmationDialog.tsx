@@ -12,6 +12,7 @@ interface UpgradeConfirmationDialogProps {
   planName: string;
   price: number;
   targetPlan: string;
+  paymentProvider?: "stripe" | "moncash";
   quantity?: number;
 }
 
@@ -42,6 +43,7 @@ const UpgradeConfirmationDialog: React.FC<UpgradeConfirmationDialogProps> = ({
   price,
   targetPlan,
   quantity,
+  paymentProvider,
 }) => {
   const [details, setDetails] = useState<SubscriptionDetails | null>(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
@@ -65,6 +67,7 @@ const UpgradeConfirmationDialog: React.FC<UpgradeConfirmationDialogProps> = ({
             plan: targetPlan,
             confirm: false,
             quantity: quantity,
+            paymentProvider: paymentProvider,
           }),
         });
 
@@ -119,6 +122,7 @@ const UpgradeConfirmationDialog: React.FC<UpgradeConfirmationDialogProps> = ({
           plan: targetPlan,
           confirm: true,
           quantity: quantity,
+          paymentProvider: paymentProvider,
         }),
       });
 

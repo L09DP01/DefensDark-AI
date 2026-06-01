@@ -1,7 +1,7 @@
 import { stripe } from "../stripe";
-import { workos } from "../workos";
 import { getUserID } from "@/lib/auth/get-user-id";
 import { NextRequest, NextResponse } from "next/server";
+import Stripe from "stripe";
 import { SubscriptionTier } from "@/types/chat";
 import { getSuspensionMessage } from "@/lib/suspensionMessage";
 
@@ -62,57 +62,74 @@ export const POST = async (req: NextRequest) => {
         : "pro-monthly-plan";
 
     const userId = await getUserID(req);
-    const user = await workos.userManagement.getUser(userId);
+    const { createAdminClient } = await import("@/lib/supabase/server");
+    const supabase = await createAdminClient();
 
     // Get user's organization
-    const existingMemberships =
-      await workos.userManagement.listOrganizationMemberships({
-        userId,
-      });
+    const { data: membership } = await supabase
+      .from("team_members")
+      .select("*")
+      .eq("user_id", userId)
+      .limit(1)
+      .single();
 
-    if (!existingMemberships.data || existingMemberships.data.length === 0) {
-      return NextResponse.json(
-        { error: "No organization found" },
-        { status: 404 },
-      );
+    if (!membership) {
+      // Allow individual subscriptions for MVP
+    } else {
+      if (membership.role !== "admin" && membership.role !== "owner") {
+        return NextResponse.json(
+          { error: "Only organization admins can manage billing" },
+          { status: 403 },
+        );
+      }
     }
 
-    const membership = existingMemberships.data[0];
-    if (membership.role?.slug !== "admin") {
-      return NextResponse.json(
-        { error: "Only organization admins can manage billing" },
-        { status: 403 },
-      );
+    // Find Stripe customer from subscriptions table
+    let stripeCustomerId: string | null = null;
+    let blocked = false;
+    let blockedReason = "";
+
+    if (membership) {
+      const { data: teamSub } = await supabase
+        .from("subscriptions")
+        .select("stripe_customer_id, status")
+        .eq("team_id", membership.team_id)
+        .limit(1)
+        .single();
+      stripeCustomerId = teamSub?.stripe_customer_id || null;
+    } else {
+      const { data: userSub } = await supabase
+        .from("subscriptions")
+        .select("stripe_customer_id, status")
+        .eq("user_id", userId)
+        .limit(1)
+        .single();
+      stripeCustomerId = userSub?.stripe_customer_id || null;
     }
 
-    const organization = await workos.organizations.getOrganization(
-      membership.organizationId,
-    );
-
-    // Find Stripe customer
-    const customers = await stripe.customers.list({
-      email: user.email,
-      limit: 10,
-    });
-
-    const matchingCustomer = customers.data.find(
-      (c) => c.metadata.workOSOrganizationId === organization.id,
-    );
+    let matchingCustomer = null;
+    if (stripeCustomerId) {
+      matchingCustomer = await stripe.customers.retrieve(stripeCustomerId);
+      if (matchingCustomer && !matchingCustomer.deleted) {
+        if ((matchingCustomer as Stripe.Customer).metadata.blocked === "true") {
+          return NextResponse.json(
+            {
+              error: getSuspensionMessage(
+                (matchingCustomer as Stripe.Customer).metadata.blocked_reason,
+              ),
+            },
+            { status: 403 },
+          );
+        }
+      } else {
+        matchingCustomer = null;
+      }
+    }
 
     if (!matchingCustomer) {
       return NextResponse.json(
         { error: "No Stripe customer found" },
         { status: 404 },
-      );
-    }
-
-    // Reject blocked customers (flagged by fraud webhook)
-    if (matchingCustomer.metadata.blocked === "true") {
-      return NextResponse.json(
-        {
-          error: getSuspensionMessage(matchingCustomer.metadata.blocked_reason),
-        },
-        { status: 403 },
       );
     }
 

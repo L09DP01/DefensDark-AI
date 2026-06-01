@@ -222,7 +222,7 @@ async function suspendCustomerUsers({
       sourceReason,
       stripeCustomerId: customerId,
       stripeChargeId: chargeId ?? undefined,
-      workosOrganizationId: orgId ?? undefined,
+      teamId: orgId ?? undefined,
       sourceCreatedAt: sourceCreatedUnix * 1000,
     });
   }

@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { workos } from "../workos";
 import { getUserIDAndPro } from "@/lib/auth/get-user-id";
-
-type Membership = Awaited<
-  ReturnType<typeof workos.userManagement.listOrganizationMemberships>
->["data"][number];
+import { createAdminClient } from "@/lib/supabase/server";
+import type { TeamMember } from "@/types/billing";
 
 /**
  * Resolve the caller's org membership. Use this for any /api/team/* route
@@ -17,10 +14,10 @@ type Membership = Awaited<
 export async function requireTeamOrg(
   req: NextRequest,
 ): Promise<
-  | { ok: true; organizationId: string; userId: string; membership: Membership }
+  | { ok: true; organizationId: string; userId: string; membership: TeamMember }
   | { ok: false; response: NextResponse }
 > {
-  const { userId, subscription, organizationId } = await getUserIDAndPro(req);
+  const { userId, subscription } = await getUserIDAndPro(req);
 
   if (subscription !== "team") {
     return {
@@ -32,26 +29,16 @@ export async function requireTeamOrg(
     };
   }
 
-  // Use the active org from the session rather than picking an arbitrary one
-  // — a user can belong to multiple orgs and we must operate on the one they
-  // are currently authenticated against.
-  if (!organizationId) {
-    return {
-      ok: false,
-      response: NextResponse.json(
-        { error: "No active organization" },
-        { status: 403 },
-      ),
-    };
-  }
+  const supabase = await createAdminClient();
 
-  const memberships = await workos.userManagement.listOrganizationMemberships({
-    userId,
-    organizationId,
-    statuses: ["active"],
-  });
+  // Find the team membership for this user
+  const { data: membership } = await supabase
+    .from("team_members")
+    .select("*")
+    .eq("user_id", userId)
+    .limit(1)
+    .single();
 
-  const membership = memberships.data?.[0];
   if (!membership) {
     return {
       ok: false,
@@ -64,7 +51,7 @@ export async function requireTeamOrg(
 
   return {
     ok: true,
-    organizationId,
+    organizationId: membership.team_id,
     userId,
     membership,
   };
@@ -80,13 +67,16 @@ export async function requireTeamOrg(
 export async function requireAdminOrg(
   req: NextRequest,
 ): Promise<
-  | { ok: true; organizationId: string; userId: string; membership: Membership }
+  | { ok: true; organizationId: string; userId: string; membership: TeamMember }
   | { ok: false; response: NextResponse }
 > {
   const result = await requireTeamOrg(req);
   if (!result.ok) return result;
 
-  if (result.membership.role?.slug !== "admin") {
+  if (
+    result.membership.role !== "admin" &&
+    result.membership.role !== "owner"
+  ) {
     return {
       ok: false,
       response: NextResponse.json(

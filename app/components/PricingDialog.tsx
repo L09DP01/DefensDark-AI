@@ -213,6 +213,9 @@ const PricingDialog: React.FC<PricingDialogProps> = ({ isOpen, onClose }) => {
     planName: string;
     price: number;
   } | null>(null);
+  const [paymentProvider, setPaymentProvider] = React.useState<
+    "stripe" | "moncash"
+  >("stripe");
 
   // Auto-close pricing dialog for ultra/team users (pro-plus can still upgrade to ultra)
   React.useEffect(() => {
@@ -247,7 +250,13 @@ const PricingDialog: React.FC<PricingDialogProps> = ({ isOpen, onClose }) => {
     // If user is free, upgrade directly using checkout
     if (subscription === "free") {
       try {
-        await handleUpgrade(plan, undefined, undefined, subscription);
+        await handleUpgrade(
+          plan,
+          undefined,
+          undefined,
+          subscription,
+          paymentProvider,
+        );
         // Don't close dialog on success - let the redirect happen
       } catch (error) {
         console.error("Upgrade failed:", error);
@@ -474,6 +483,7 @@ const PricingDialog: React.FC<PricingDialogProps> = ({ isOpen, onClose }) => {
         planName={pendingUpgrade?.planName || ""}
         price={pendingUpgrade?.price || 0}
         targetPlan={pendingUpgrade?.plan || ""}
+        paymentProvider={paymentProvider}
       />
 
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -503,6 +513,36 @@ const PricingDialog: React.FC<PricingDialogProps> = ({ isOpen, onClose }) => {
               onChange={handleBillingChange}
               isOpen={isOpen}
             />
+          </div>
+
+          <div className="mt-4 flex flex-col items-center justify-center gap-2 px-6">
+            <p className="text-sm font-medium text-muted-foreground">
+              Select Payment Method
+            </p>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="paymentProvider"
+                  value="stripe"
+                  checked={paymentProvider === "stripe"}
+                  onChange={() => setPaymentProvider("stripe")}
+                  className="accent-[#615eeb]"
+                />
+                <span>Credit Card (Stripe)</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="paymentProvider"
+                  value="moncash"
+                  checked={paymentProvider === "moncash"}
+                  onChange={() => setPaymentProvider("moncash")}
+                  className="accent-[#615eeb]"
+                />
+                <span>MonCash</span>
+              </label>
+            </div>
           </div>
 
           <div className="px-6 pb-8">

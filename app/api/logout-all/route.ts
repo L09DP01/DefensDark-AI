@@ -1,32 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
-import { workos } from "@/app/api/workos";
 import { getUserID } from "@/lib/auth/get-user-id";
+import { createClient } from "@/lib/supabase/server";
 
-export async function POST(req: NextRequest) {
+export const POST = async (req: NextRequest) => {
   try {
-    // Get the current user ID
     const userId = await getUserID(req);
 
-    // List all sessions for the user
-    const sessionsResponse = await workos.userManagement.listSessions(userId);
+    if (userId) {
+      const supabase = await createClient();
+      // To sign out globally:
+      await supabase.auth.signOut({ scope: "global" });
+    }
 
-    // Revoke all sessions (tolerate already-ended sessions)
-    const revokePromises = sessionsResponse.data.map((session) =>
-      workos.userManagement.revokeSession({ sessionId: session.id }),
-    );
-
-    await Promise.allSettled(revokePromises);
-
-    return NextResponse.json({
-      success: true,
-      message: "All sessions revoked successfully",
-      revokedSessions: sessionsResponse.data.length,
-    });
-  } catch (error) {
-    console.error("Failed to revoke all sessions:", error);
-    return NextResponse.json(
-      { error: "Failed to revoke all sessions" },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: true });
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error ? error.message : "An error occurred";
+    console.error("Failed to logout all sessions:", error);
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
-}
+};

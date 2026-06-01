@@ -293,6 +293,14 @@ async function handleInvoicePaid(invoice: Stripe.Invoice): Promise<void> {
   if (tier === "team" && orgId) {
     await clearOrgRemovedUsage(orgId);
   }
+
+  // Update Supabase
+  await upsertSupabaseSubscription(
+    subscription as Stripe.Subscription,
+    tier,
+    userIds,
+    orgId,
+  );
 }
 
 /** Handle customer.subscription.updated — reset old tier's buckets on plan change. */
@@ -375,7 +383,14 @@ async function handleSubscriptionUpdated(
       userIds.map((uid) => resetRateLimitBuckets(uid, previousTier)),
     );
   }
+
+  // Update Supabase
+  if (currentTier) {
+    await upsertSupabaseSubscription(subscription, currentTier, userIds, orgId);
+  }
 }
+
+import { createAdminClient } from "@/lib/supabase/server";
 
 /** Handle customer.subscription.deleted — emit churn analytics for the lapsed paid users. */
 async function handleSubscriptionDeleted(
@@ -412,6 +427,103 @@ async function handleSubscriptionDeleted(
       cancellation_reason: cancellationReason,
       $set: { subscription_tier: "free" },
     });
+  }
+
+  // Update Supabase Subscription status
+  try {
+    const supabase = await createAdminClient();
+    await supabase
+      .from("subscriptions")
+      .update({
+        status: "canceled",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("stripe_subscription_id", subscription.id);
+  } catch (error) {
+    console.error(
+      "[Subscription Webhook] error updating Supabase on deleted:",
+      error,
+    );
+  }
+}
+
+/** Upsert subscription into Supabase */
+async function upsertSupabaseSubscription(
+  subscription: Stripe.Subscription,
+  tier: SubscriptionTier,
+  userIds: string[],
+  orgId: string | null,
+) {
+  try {
+    const supabase = await createAdminClient();
+
+    // Determine the expires_at timestamp based on the subscription's current_period_end
+    const expiresAt = new Date(
+      (subscription as any).current_period_end * 1000,
+    ).toISOString();
+
+    // Insert/Update the subscription. If it's a team subscription, it uses orgId (teamId).
+    // Otherwise, we tie it to the first user in userIds.
+
+    // We should look up if there's already a subscription by stripe_subscription_id
+    const { data: existingSub } = await supabase
+      .from("subscriptions")
+      .select("id")
+      .eq("stripe_subscription_id", subscription.id)
+      .limit(1)
+      .single();
+
+    if (existingSub) {
+      await supabase
+        .from("subscriptions")
+        .update({
+          tier,
+          status:
+            subscription.status === "active" ||
+            subscription.status === "trialing"
+              ? "active"
+              : subscription.status === "past_due"
+                ? "past_due"
+                : subscription.status === "unpaid"
+                  ? "unpaid"
+                  : "canceled",
+          expires_at: expiresAt,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", existingSub.id);
+    } else {
+      // New subscription
+      const customerId =
+        typeof subscription.customer === "string"
+          ? subscription.customer
+          : subscription.customer?.id;
+
+      const payload: any = {
+        tier,
+        status:
+          subscription.status === "active" || subscription.status === "trialing"
+            ? "active"
+            : subscription.status === "past_due"
+              ? "past_due"
+              : subscription.status === "unpaid"
+                ? "unpaid"
+                : "canceled",
+        payment_provider: "stripe",
+        stripe_customer_id: customerId,
+        stripe_subscription_id: subscription.id,
+        expires_at: expiresAt,
+        user_id: userIds[0] || null, // Assuming first user is the owner if no orgId
+      };
+
+      if (orgId) {
+        payload.team_id = orgId;
+        payload.user_id = null; // Either user_id or team_id
+      }
+
+      await supabase.from("subscriptions").insert(payload);
+    }
+  } catch (error) {
+    console.error("[Subscription Webhook] Error upserting to Supabase:", error);
   }
 }
 
